@@ -99,7 +99,7 @@ namespace Potato.Core.Logging
         public static Logger Instance => _instance ?? (_instance = new Logger());
         
         // Configuration
-        private LogLevel _minimumLevel = LogLevel.Debug;
+        private LogLevel _minimumLevel = LogLevel.Error;
         private bool _logToConsole = true;
         private bool _logToFile = true;
         private bool _logToUI = true;

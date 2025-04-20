@@ -1,11 +1,7 @@
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Potato.Core.Enemies;
 using Potato.Core.Logging;
-using Potato;  // Ajout de l'espace de noms principal
 using System;
-using System.Collections.Generic;
-using Potato.Core.Entities;
 using Potato.Core;
 
 namespace Potato.Engine

@@ -21,14 +21,14 @@ namespace Potato.Core
         
         // Flag pour indiquer si les comportements doivent être triés
         private static bool _needsSort = false;
-        
-        private static GameManager _game;
          
         /// <summary>
         /// Charge automatiquement tous les GameBehaviours présents dans l'assembly
         /// </summary>
         public static void DiscoverBehaviours()
         {
+            var game = GameManager.Instance;
+
             try
             {
                 // Obtenir l'assembly courant
@@ -51,7 +51,7 @@ namespace Potato.Core
                             continue;
                         }
                         
-                        Logger.Instance.Debug($"Tentative de création du behaviour {type.Name}", LogCategory.Core);
+                        //Logger.Instance.Debug($"Tentative de création du behaviour {type.Name}", LogCategory.Core);
                         
                         // Essayer d'abord le constructeur sans paramètre
                         var defaultConstructor = type.GetConstructor(Type.EmptyTypes);
@@ -65,9 +65,9 @@ namespace Potato.Core
                         
                         // Puis essayer le constructeur avec Game
                         var gameConstructor = type.GetConstructor(new[] { typeof(Game) });
-                        if (gameConstructor != null && _game != null)
+                        if (gameConstructor != null && game != null)
                         {
-                            var behaviour = (GameBehaviour)gameConstructor.Invoke(new object[] { _game });
+                            var behaviour = (GameBehaviour)gameConstructor.Invoke(new object[] { game });
                             RegisterBehaviour(behaviour);
                             count++;
                             continue;
@@ -81,7 +81,7 @@ namespace Potato.Core
                     }
                 }
                 
-                Logger.Instance.Info($"Découvert {count} behaviours via réflexion", LogCategory.Core);
+                //Logger.Instance.Info($"Découvert {count} behaviours via réflexion", LogCategory.Core);
             }
             catch (Exception ex)
             {
@@ -106,7 +106,11 @@ namespace Potato.Core
                 ApplyExecutionOrderAttribute(behaviour);
                 
                 _behaviours.Add(behaviour);
-                Logger.Instance.Debug($"Behaviour {behaviour.GetType().Name} enregistré avec priorité {behaviour.ExecutionOrder}", LogCategory.Core);
+                
+                // Activer le comportement pour déclencher le cycle de vie (Awake, OnEnable, Start)
+                behaviour.Enable();
+                
+                //Logger.Instance.Debug($"Behaviour {behaviour.GetType().Name} enregistré avec priorité {behaviour.ExecutionOrder}", LogCategory.Core);
                 RequestSortBehaviours();
             }
         }

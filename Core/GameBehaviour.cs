@@ -45,7 +45,7 @@ namespace Potato.Core
         public virtual void Awake() 
         {
             _isAwakeCalled = true;
-            Logger.Instance.Debug($"[{GetType().Name}] Awake appelé", LogCategory.Core);
+            //Logger.Instance.Debug($"[{GetType().Name}] Awake appelé", LogCategory.Core);
         }
         
         /// <summary>
@@ -55,7 +55,7 @@ namespace Potato.Core
         public virtual void Start() 
         {
             _isStartCalled = true;
-            Logger.Instance.Debug($"[{GetType().Name}] Start appelé", LogCategory.Core);
+            //Logger.Instance.Debug($"[{GetType().Name}] Start appelé", LogCategory.Core);
         }
         
         /// <summary>
@@ -77,7 +77,7 @@ namespace Potato.Core
         public virtual void OnEnable()
         {
             _isActive = true;
-            Logger.Instance.Debug($"[{GetType().Name}] Activé", LogCategory.Core);
+            //Logger.Instance.Debug($"[{GetType().Name}] Activé", LogCategory.Core);
         }
         
         /// <summary>
@@ -87,7 +87,7 @@ namespace Potato.Core
         public virtual void OnDisable()
         {
             _isActive = false;
-            Logger.Instance.Debug($"[{GetType().Name}] Désactivé", LogCategory.Core);
+            //Logger.Instance.Debug($"[{GetType().Name}] Désactivé", LogCategory.Core);
         }
         
         /// <summary>
@@ -96,7 +96,7 @@ namespace Potato.Core
         /// </summary>
         public virtual void OnDestroy()
         {
-            Logger.Instance.Debug($"[{GetType().Name}] Détruit", LogCategory.Core);
+            //Logger.Instance.Debug($"[{GetType().Name}] Détruit", LogCategory.Core);
         }
         
         /// <summary>

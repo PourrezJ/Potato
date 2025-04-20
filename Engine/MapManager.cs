@@ -27,10 +27,10 @@ namespace Potato.Engine
         private List<Rectangle> _safeZones;
         private List<Rectangle> _dangerZones;
 
-        // // Textures pour le rendu de la carte
-        // private Texture2D _backgroundTexture;
-        // private Texture2D _obstacleTexture;
-        // private Texture2D _decorationTexture;
+        // Textures pour le rendu de la carte
+        private Texture2D _groundTexture;
+        private Texture2D _obstacleTexture;
+        private Texture2D _decorationTexture;
         private Texture2D _pixelTexture;  // Pour le rendu basique
 
         // Configuration de l'apparence
@@ -71,7 +71,76 @@ namespace Potato.Engine
             _pixelTexture = new Texture2D(GameManager.Instance.GraphicsDevice, 1, 1);
             _pixelTexture.SetData(new[] { Color.White });
 
+            // Créer une texture de sol
+            CreateGroundTexture();
+
             Logger.Instance.Info($"MapManager initialisé - Dimensions: {MapWidth}x{MapHeight}", LogCategory.Gameplay);
+        }
+
+        /// <summary>
+        /// Crée une texture de sol procédurale
+        /// </summary>
+        private void CreateGroundTexture()
+        {
+            try
+            {
+                // Créer une texture pour le sol avec des motifs
+                int textureSize = 256;
+                _groundTexture = new Texture2D(GameManager.Instance.GraphicsDevice, textureSize, textureSize);
+                
+                // Générer une texture de sol plus intéressante
+                Color[] colorData = new Color[textureSize * textureSize];
+                
+                // Définir des couleurs de base pour le sol
+                Color baseGroundColor = new Color(50, 90, 50); // Vert foncé
+                Color variationColor1 = new Color(60, 100, 60); // Vert un peu plus clair
+                Color variationColor2 = new Color(40, 70, 40); // Vert plus foncé
+                
+                // Générer une texture de sol avec des variations aléatoires
+                for (int y = 0; y < textureSize; y++)
+                {
+                    for (int x = 0; x < textureSize; x++)
+                    {
+                        // Créer un motif de base - ici une simple grille
+                        bool isGridLine = x % 32 == 0 || y % 32 == 0;
+                        
+                        // Ajouter des variations aléatoires
+                        float noiseValue = (float)_random.NextDouble();
+                        
+                        Color pixelColor;
+                        if (isGridLine)
+                        {
+                            // Lignes de grille légèrement plus foncées
+                            pixelColor = new Color(
+                                (int)(baseGroundColor.R * 0.9),
+                                (int)(baseGroundColor.G * 0.9),
+                                (int)(baseGroundColor.B * 0.9));
+                        }
+                        else if (noiseValue < 0.3f)
+                        {
+                            pixelColor = variationColor1;
+                        }
+                        else if (noiseValue > 0.7f)
+                        {
+                            pixelColor = variationColor2;
+                        }
+                        else
+                        {
+                            pixelColor = baseGroundColor;
+                        }
+                        
+                        colorData[y * textureSize + x] = pixelColor;
+                    }
+                }
+                
+                _groundTexture.SetData(colorData);
+                Logger.Instance.Info("Texture de sol générée avec succès", LogCategory.Gameplay);
+            }
+            catch (Exception ex)
+            {
+                Logger.Instance.Error($"Erreur lors de la création de la texture de sol: {ex.Message}", LogCategory.Gameplay);
+                _groundTexture = null;
+            }
         }
 
         /// <summary>
@@ -327,11 +396,29 @@ namespace Potato.Engine
         /// </summary>
         public new void Draw(SpriteBatch spriteBatch)
         {
-            if (_game == null || _pixelTexture == null)
+            if (_game == null)
                 return;
 
-            // Dessiner l'arrière-plan
-            spriteBatch.Draw(_pixelTexture, Bounds, _backgroundColor);
+            // Dessiner le sol texturé
+            if (_groundTexture != null)
+            {
+                // Dessiner le sol texturé en répétant la texture pour couvrir toute la carte
+                for (int y = 0; y < MapHeight; y += _groundTexture.Height)
+                {
+                    for (int x = 0; x < MapWidth; x += _groundTexture.Width)
+                    {
+                        spriteBatch.Draw(
+                            _groundTexture,
+                            new Rectangle(x, y, _groundTexture.Width, _groundTexture.Height),
+                            Color.White);
+                    }
+                }
+            }
+            else
+            {
+                // Fallback: dessiner l'arrière-plan uni si la texture n'est pas disponible
+                spriteBatch.Draw(_pixelTexture, Bounds, _backgroundColor);
+            }
             
             // Dessiner la grille si activée
             if (_useGrid)

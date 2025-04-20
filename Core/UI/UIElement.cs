@@ -52,6 +52,9 @@ namespace Potato.Core.UI
         public UIElement Parent { get; protected set; }
         protected List<UIElement> _children = new List<UIElement>();
         
+        // Canvas auquel cet élément appartient
+        public UICanvas Canvas { get; set; }
+        
         // États d'interaction
         public bool IsHovered { get; protected set; }
         public bool IsPressed { get; protected set; }

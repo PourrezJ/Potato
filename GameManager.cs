@@ -11,6 +11,7 @@ using Potato.Core.Weapons;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Potato.Core.UI.Screens;
 
 namespace Potato;
 
@@ -128,62 +129,38 @@ public class GameManager : Game
 
     protected override void Initialize()
     {
-        // Initialiser le BehaviourManager
-        BehaviourManager.DiscoverBehaviours();
+
         Logger.Instance.Info("BehaviourManager initialisé", LogCategory.Core);
         
-        // Initialiser les gestionnaires de jeu
-        _waveManager = WaveManager.Instance;
-        _mapManager = MapManager.Instance;
-        _waveManager.OnWaveCompleted += OnWaveCompletedHandler;
-        /*
-        // Initialize main menu screen
-        _mainMenuScreen = new MainMenuScreen();
-        _mainMenuScreen.OnStartGame += () => {
-            _currentGameState = GameState.CharacterSelection;
-            
-            // Cacher le menu principal et montrer l'écran de sélection de personnage
-            _mainMenuScreen.Hide();
-            _characterSelectionScreen.OpenCharacterSelectionScreen();
-        };
-        _mainMenuScreen.OnOptions += () => {
-            // To be implemented later: options screen
-        };
-        _mainMenuScreen.OnQuit += () => {
-            Exit();
-        };
-        */
-        base.Initialize();
+
         
-        // Show main menu after initialization
-        MainMenuScreen.Instance.Show();
+        base.Initialize();
+
     }
 
     protected override void LoadContent()
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         
-        // Load DefaultFont
         try
         {        
             // Initialize log viewer
             _logViewer = new LogViewer(this, _font);
             Logger.Instance.Info("LogViewer initialized");
             
-
-            // _pauseMenu.OnResume += () => {
-            //     _currentGameState = GameState.Playing;
-            // };
-            // _pauseMenu.OnQuit += () => {
-            //     RestartGame();
-            // };
-
-            
             try 
             {
-                // Découvrir automatiquement les autres GameBehaviours (si nécessaire)
-                // BehaviourManager.Instance.DiscoverBehaviours();
+                // Initialiser le BehaviourManager
+                BehaviourManager.DiscoverBehaviours();
                 Logger.Instance.Info("Behaviors discovery completed");
+
+                // Initialiser les gestionnaires de jeu
+                _waveManager = WaveManager.Instance;
+                _mapManager = MapManager.Instance;
+                _waveManager.OnWaveCompleted += OnWaveCompletedHandler;
+
+                MainMenuCanvas.Instance.CreateUI();
+
             }
             catch (Exception discoverEx) 
             {
@@ -204,10 +181,6 @@ public class GameManager : Game
         // Mettre à jour tous les GameBehaviours via le BehaviourManager
         BehaviourManager.Update(gameTime);
 
-        // Read input
-        KeyboardState currentKeyboardState = Keyboard.GetState();
-        MouseState currentMouseState = Mouse.GetState();
-
         // Update UIManager in all states
         UIManager.Instance.Update(gameTime);
         
@@ -227,8 +200,6 @@ public class GameManager : Game
                 break;
         }
         
-
-
         base.Update(gameTime);
     }
     
@@ -236,6 +207,9 @@ public class GameManager : Game
     {
         GraphicsDevice.Clear(Color.Black);
         
+        // Dessiner tous les GameBehaviours via le BehaviourManager
+        BehaviourManager.Draw(_spriteBatch);
+
         // Start sprite batch
         _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
         
@@ -246,10 +220,7 @@ public class GameManager : Game
         {
             DrawGameElements();
         }
-        
-        // Dessiner tous les GameBehaviours via le BehaviourManager
-        BehaviourManager.Draw(_spriteBatch);
-             
+                     
         // Draw LogViewer on top of everything if it's visible
         _logViewer?.Draw(_spriteBatch);
         
@@ -271,10 +242,14 @@ public class GameManager : Game
 
     #region Game State Management
     
-    public void SetGameState(GameState gameState){
+    public void SetGameState(GameState gameState)
+    {
+        GameState previousState = _currentGameState;
         _currentGameState = gameState;
         
-        Logger.Instance.Info($"Game state changed to: {_currentGameState}", LogCategory.Gameplay);
+        Logger.Instance.Info($"Game state changed from {previousState} to: {_currentGameState}", LogCategory.Gameplay);
+        
+        // Note: la gestion des canvas se fait maintenant manuellement
     }
     
     public void RestartGame()
@@ -291,10 +266,21 @@ public class GameManager : Game
     /// </summary>
     public void StartGame()
     {
+        // Générer d'abord une nouvelle carte pour la partie
+        _mapManager.GenerateMap();
+        Logger.Instance.Info("Nouvelle carte générée pour la partie", LogCategory.Gameplay);
+        
         // Initialize player and weapon
         _selectedPlayer.Initialize();
         Player = _selectedPlayer;
         
+        // S'assurer que le joueur est bien positionné au centre de l'écran
+        Player.Position = new Vector2(
+            GraphicsDevice.Viewport.Width / 2,
+            GraphicsDevice.Viewport.Height / 2);
+        Logger.Instance.Info($"Joueur positionné au centre: {Player.Position.X}, {Player.Position.Y}", LogCategory.Gameplay);
+
+     
         _selectedWeapon.Initialize();
         Player.AddWeapon(_selectedWeapon);
         
@@ -467,7 +453,6 @@ public class GameManager : Game
 
     public void StartNextWave()
     {
-        ShopScreen.Instance.CloseShop();
         SetGameState(GameState.Playing);
 
         StartWave(Wave + 1);
@@ -488,10 +473,7 @@ public class GameManager : Game
             
             // Repositionner le joueur
             ResetPlayerPosition();
-
-            // Create shop screen
-            ShopScreen.Instance.OpenShop();
-            
+   
             // Change game state
             SetGameState(GameState.Shopping);
 
@@ -536,8 +518,36 @@ public class GameManager : Game
             collectible.Draw(_spriteBatch);
         }
         
-        // Draw player
-        Player?.Draw(_spriteBatch);
+        // Draw player with debug information
+        if (Player != null)
+        {
+            // Force le dessin d'un marqueur visible pour le joueur (un grand cercle rouge)
+            Texture2D debugTexture = new Texture2D(GraphicsDevice, 1, 1);
+            debugTexture.SetData(new[] { Color.White });
+            
+            // Dessiner un grand cercle rouge à la position du joueur pour le debug
+            _spriteBatch.Draw(
+                debugTexture,
+                new Rectangle(
+                    (int)Player.Position.X - 20,
+                    (int)Player.Position.Y - 20,
+                    40, 
+                    40),
+                Color.Red);
+                
+            // Maintenant dessiner le joueur normalement
+            Player.Draw(_spriteBatch);
+            
+            // Log la position du joueur pour le débogage
+            if (Player.Position != Vector2.Zero)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DRAW] Position du joueur: {Player.Position.X}, {Player.Position.Y}");
+            }
+        }
+        else
+        {
+            System.Diagnostics.Debug.WriteLine("[DRAW] Player est null dans DrawGameElements!");
+        }
 
         // Draw weapons
         foreach (var weapon in Weapons)
@@ -551,95 +561,9 @@ public class GameManager : Game
             enemy.Draw(_spriteBatch);
         }
         
-        // Draw game UI if not in Shopping state
-        if (_currentGameState != GameState.Shopping)
-        {
-            DrawGameUI();
-        }
+        // Note: On ne dessine plus manuellement l'UI ici, car UIManager s'en charge via les canvas
     }
     
-    private void DrawBackground()
-    {
-        // Create a simple gradient background
-        Texture2D pixel = new Texture2D(GraphicsDevice, 1, 1);
-        pixel.SetData(new[] { Color.White });
-        
-        // Draw a dark blue background
-        _spriteBatch.Draw(
-            pixel,
-            new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height),
-            new Color(20, 20, 40));
-    }
-    
-    private void DrawInstructions()
-    {
-        if (_font != null)
-        {
-            string instructions = "Press ESC to return to main menu";
-            Vector2 textSize = _font.MeasureString(instructions);
-            Vector2 position = new Vector2(
-                GraphicsDevice.Viewport.Width / 2 - textSize.X / 2,
-                GraphicsDevice.Viewport.Height - 30);
-                
-            _spriteBatch.DrawString(_font, instructions, position, Color.LightGray);
-        }
-    }
-    
-    private void DrawGameUI()
-    {
-        if (_font == null)
-        {
-            // Fallback if font isn't loaded
-            Texture2D pixel = new Texture2D(GraphicsDevice, 1, 1);
-            pixel.SetData(new[] { Color.White });
-            
-            string scoreText = $"Score: {_score}";
-            string waveText = $"Wave: {Wave}";
-            string healthText = $"Health: {Player.Stats.Health}/{Player.Stats.MaxHealth}";
-            string waveTimeText = $"Wave Time: {RemainingWaveTime:F1}s";
-            
-            DrawSimpleText(scoreText, new Vector2(10, 10), Color.White, pixel);
-            DrawSimpleText(waveText, new Vector2(10, 40), Color.White, pixel);
-            DrawSimpleText(healthText, new Vector2(10, 70), Color.White, pixel);
-            DrawSimpleText(waveTimeText, new Vector2(10, 100), Color.Yellow, pixel);
-            
-            if (_isGameOver)
-            {
-                string gameOverText = "GAME OVER - Press ENTER to restart";
-                int textWidth = gameOverText.Length * 8;
-                Vector2 position = new Vector2(
-                    GraphicsDevice.Viewport.Width / 2 - textWidth / 2,
-                    GraphicsDevice.Viewport.Height / 2 - 8);
-                    
-                DrawSimpleText(gameOverText, position, Color.Red, pixel);
-            }
-        }
-        else
-        {
-            // Regular font rendering
-            string scoreText = $"Score: {_score}";
-            string waveText = $"Wave: {Wave}";
-            string healthText = $"Health: {Player.Stats.Health}/{Player.Stats.MaxHealth}";
-            string waveTimeText = $"Wave Time: {RemainingWaveTime:F1}s";
-            
-            _spriteBatch.DrawString(_font, scoreText, new Vector2(10, 10), Color.White);
-            _spriteBatch.DrawString(_font, waveText, new Vector2(10, 40), Color.White);
-            _spriteBatch.DrawString(_font, healthText, new Vector2(10, 70), Color.White);
-            _spriteBatch.DrawString(_font, waveTimeText, new Vector2(10, 100), Color.Yellow);
-            
-            if (_isGameOver)
-            {
-                string gameOverText = "GAME OVER - Press ENTER to restart";
-                Vector2 textSize = _font.MeasureString(gameOverText);
-                Vector2 position = new Vector2(
-                    GraphicsDevice.Viewport.Width / 2 - textSize.X / 2,
-                    GraphicsDevice.Viewport.Height / 2 - textSize.Y / 2);
-                    
-                _spriteBatch.DrawString(_font, gameOverText, position, Color.Red);
-            }
-        }
-    }
-
     private void DrawSimpleText(string text, Vector2 position, Color color, Texture2D pixel)
     {
         // For simplicity, we'll just draw a colored rectangle as a text substitute
