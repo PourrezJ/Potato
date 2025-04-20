@@ -1,23 +1,20 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using Potato.Core;
 using Potato.Core.UI;
 using Potato.Core.Logging;
 using Potato.Core.Items;
-using Potato.Core.Weapons;
 using Potato.Core.Entities;
-using Potato;  // Ajout de l'espace de noms principal
 using System;
 using System.Collections.Generic;
 
 namespace Potato.Engine
 {
-    public class ShopScreen : GameBehaviour
+    public class ShopScreen : Singleton<ShopScreen>
     {
         private List<ShopItem> _shopItems;
         private int _selectedItemIndex;
-        private KeyboardState _previousKeyboardState;
+        // private KeyboardState _previousKeyboardState;
         private bool _isShopClosed;
         private SpriteFont _font;
         
@@ -26,7 +23,7 @@ namespace Potato.Engine
         // UI Components
         private Panel _mainPanel;
         private Panel _itemDetailsPanel;
-        private Label _titleLabel;
+        // private Label _titleLabel;
         private Label _goldLabel;
         private Label _itemDescLabel;
         private Button _closeButton;
@@ -54,33 +51,22 @@ namespace Potato.Engine
             _selectedItemIndex = 0;
             _isShopClosed = true; // Commencer avec le shop fermé
             _itemButtons = new List<Button>();
-            Logger.Instance.Debug("[ShopScreen] Constructeur exécuté avec succès", LogCategory.UI);
         }
         
         public override void Awake()
         {
             base.Awake();
             
-            // Utiliser GameManager au lieu de Game1
-            _player = GameManager.Instance.Player;
-            
-            // Utiliser la police déjà chargée par le UIManager au lieu de la charger à nouveau
-            _font = UIManager.Instance.GetDefaultFont();
-            
-            if (_font == null)
-            {
-                Logger.Instance.Warning("[ShopScreen] Impossible d'obtenir DefaultFont depuis UIManager", LogCategory.UI);
-            }
-            else
-            {
-                Logger.Instance.Debug("[ShopScreen] Police DefaultFont obtenue depuis UIManager", LogCategory.UI);
-            }
-
-            InitializeUI();
+            _player = Player.Local;            
         }
                       
         private void InitializeUI()
         {
+            if (_initialized)
+                return;
+
+            _initialized = true;
+
             // Get screen dimensions
             int screenWidth = _game.GraphicsDevice.Viewport.Width;
             int screenHeight = _game.GraphicsDevice.Viewport.Height;
@@ -449,6 +435,9 @@ namespace Potato.Engine
         {
             if (_isShopClosed)
                 return;
+
+            InitializeUI();
+
                 
             // Let the UIManager draw all elements
             

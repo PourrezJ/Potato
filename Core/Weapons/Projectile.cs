@@ -43,7 +43,7 @@ namespace Potato.Core.Weapons
             _lifeTimer = 0;
             _lifespan = 5.0f; // 5 secondes maximum
             
-            _graphicsDevice = Game1.Instance.GraphicsDevice;
+            _graphicsDevice = GameManager.Instance.GraphicsDevice;
 
             LoadContent();
         }

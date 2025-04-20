@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Potato.Core.Attributes;
 using Potato.Core.Logging;
 using System;
 using System.Collections.Generic;
@@ -11,35 +12,22 @@ namespace Potato.Core
     /// <summary>
     /// Gestionnaire central de tous les GameBehaviours, inspiré du système de Unity
     /// </summary>
-    public class BehaviourManager
+    public static class BehaviourManager
     {
-        private static BehaviourManager _instance;
-        public static BehaviourManager Instance => _instance ??= new BehaviourManager();
+        private static List<GameBehaviour> _behaviours = new List<GameBehaviour>();
+        private static List<GameBehaviour> _pendingAddition = new List<GameBehaviour>();
+        private static List<GameBehaviour> _pendingRemoval = new List<GameBehaviour>();
+        private static bool _isProcessingLists = false;
         
-        private Game _game;
-        private List<GameBehaviour> _behaviours = new List<GameBehaviour>();
-        private List<GameBehaviour> _pendingAddition = new List<GameBehaviour>();
-        private List<GameBehaviour> _pendingRemoval = new List<GameBehaviour>();
-        private bool _isProcessingLists = false;
+        // Flag pour indiquer si les comportements doivent être triés
+        private static bool _needsSort = false;
         
-        private BehaviourManager()
-        {
-            Logger.Instance.Info("BehaviourManager créé", LogCategory.Core);
-        }
-        
-        /// <summary>
-        /// Initialise le BehaviourManager avec la référence au jeu
-        /// </summary>
-        public void Initialize(Game game)
-        {
-            _game = game;
-            Logger.Instance.Info("BehaviourManager initialisé", LogCategory.Core);
-        }
-        
+        private static GameManager _game;
+         
         /// <summary>
         /// Charge automatiquement tous les GameBehaviours présents dans l'assembly
         /// </summary>
-        public void DiscoverBehaviours()
+        public static void DiscoverBehaviours()
         {
             try
             {
@@ -104,7 +92,7 @@ namespace Potato.Core
         /// <summary>
         /// Enregistre un nouveau GameBehaviour
         /// </summary>
-        public void RegisterBehaviour(GameBehaviour behaviour)
+        public static void RegisterBehaviour(GameBehaviour behaviour)
         {
             if (_isProcessingLists)
             {
@@ -114,15 +102,34 @@ namespace Potato.Core
             
             if (!_behaviours.Contains(behaviour))
             {
+                // Lecture de l'attribut ExecutionOrder s'il existe
+                ApplyExecutionOrderAttribute(behaviour);
+                
                 _behaviours.Add(behaviour);
-                Logger.Instance.Debug($"Behaviour {behaviour.GetType().Name} enregistré", LogCategory.Core);
+                Logger.Instance.Debug($"Behaviour {behaviour.GetType().Name} enregistré avec priorité {behaviour.ExecutionOrder}", LogCategory.Core);
+                RequestSortBehaviours();
+            }
+        }
+        
+        /// <summary>
+        /// Applique l'attribut ExecutionOrderAttribute s'il est défini sur la classe
+        /// </summary>
+        private static void ApplyExecutionOrderAttribute(GameBehaviour behaviour)
+        {
+            Type type = behaviour.GetType();
+            ExecutionOrderAttribute attribute = type.GetCustomAttribute<ExecutionOrderAttribute>();
+            
+            if (attribute != null)
+            {
+                behaviour.ExecutionOrder = attribute.Order;
+                Logger.Instance.Debug($"Attribut ExecutionOrder {attribute.Order} appliqué à {type.Name}", LogCategory.Core);
             }
         }
         
         /// <summary>
         /// Supprime un GameBehaviour
         /// </summary>
-        public void UnregisterBehaviour(GameBehaviour behaviour)
+        public static void UnregisterBehaviour(GameBehaviour behaviour)
         {
             if (_isProcessingLists)
             {
@@ -139,10 +146,33 @@ namespace Potato.Core
         }
         
         /// <summary>
+        /// Demande au gestionnaire de trier les comportements lors du prochain cycle
+        /// </summary>
+        public static void RequestSortBehaviours()
+        {
+            _needsSort = true;
+        }
+        
+        /// <summary>
+        /// Trie les comportements en fonction de leur ordre d'exécution
+        /// </summary>
+        private static void SortBehavioursByExecutionOrder()
+        {
+            _behaviours = _behaviours.OrderBy(b => b.ExecutionOrder).ToList();
+            _needsSort = false;
+            Logger.Instance.Debug("Behaviours triés par ordre d'exécution", LogCategory.Core);
+        }
+        
+        /// <summary>
         /// Met à jour tous les GameBehaviours actifs
         /// </summary>
-        public void Update(GameTime gameTime)
+        public static void Update(GameTime gameTime)
         {
+            if (_needsSort)
+            {
+                SortBehavioursByExecutionOrder();
+            }
+            
             _isProcessingLists = true;
             
             foreach (var behaviour in _behaviours)
@@ -169,8 +199,13 @@ namespace Potato.Core
         /// <summary>
         /// Dessine tous les GameBehaviours actifs
         /// </summary>
-        public void Draw(SpriteBatch spriteBatch)
+        public static void Draw(SpriteBatch spriteBatch)
         {
+            if (_needsSort)
+            {
+                SortBehavioursByExecutionOrder();
+            }
+            
             _isProcessingLists = true;
             
             foreach (var behaviour in _behaviours)
@@ -197,34 +232,49 @@ namespace Potato.Core
         /// <summary>
         /// Traite les listes d'ajout et de suppression en attente
         /// </summary>
-        private void ProcessPendingLists()
+        private static void ProcessPendingLists()
         {
+            bool needsSorting = false;
+            
             // Traiter les ajouts
-            foreach (var behaviour in _pendingAddition)
+            if (_pendingAddition.Count > 0)
             {
-                if (!_behaviours.Contains(behaviour))
+                foreach (var behaviour in _pendingAddition)
                 {
-                    _behaviours.Add(behaviour);
+                    if (!_behaviours.Contains(behaviour))
+                    {
+                        _behaviours.Add(behaviour);
+                        needsSorting = true;
+                    }
                 }
+                _pendingAddition.Clear();
             }
-            _pendingAddition.Clear();
             
             // Traiter les suppressions
-            foreach (var behaviour in _pendingRemoval)
+            if (_pendingRemoval.Count > 0)
             {
-                if (_behaviours.Contains(behaviour))
+                foreach (var behaviour in _pendingRemoval)
                 {
-                    behaviour.Destroy();
-                    _behaviours.Remove(behaviour);
+                    if (_behaviours.Contains(behaviour))
+                    {
+                        behaviour.Destroy();
+                        _behaviours.Remove(behaviour);
+                    }
                 }
+                _pendingRemoval.Clear();
             }
-            _pendingRemoval.Clear();
+            
+            // Trier si nécessaire
+            if (needsSorting)
+            {
+                RequestSortBehaviours();
+            }
         }
         
         /// <summary>
         /// Obtient tous les GameBehaviours d'un type spécifique
         /// </summary>
-        public List<T> GetBehavioursOfType<T>() where T : GameBehaviour
+        public static List<T> GetBehavioursOfType<T>() where T : GameBehaviour
         {
             return _behaviours.OfType<T>().ToList();
         }
@@ -232,7 +282,7 @@ namespace Potato.Core
         /// <summary>
         /// Obtient le premier GameBehaviour d'un type spécifique
         /// </summary>
-        public T GetBehaviourOfType<T>() where T : GameBehaviour
+        public static T GetBehaviourOfType<T>() where T : GameBehaviour
         {
             return _behaviours.OfType<T>().FirstOrDefault();
         }
@@ -240,7 +290,7 @@ namespace Potato.Core
         /// <summary>
         /// Libère toutes les ressources
         /// </summary>
-        public void Dispose()
+        public static void Dispose()
         {
             foreach (var behaviour in _behaviours)
             {

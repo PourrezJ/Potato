@@ -14,7 +14,7 @@ namespace Potato.Core.UI
         private List<string> _displayItems;
         private MouseState _currentMouseState;
         private MouseState _previousMouseState;
-        private bool _isHovered;
+        // private bool _isHovered;
         private bool _isOpen;
         private int _selectedIndex = -1;
         private Button _dropdownButton;
@@ -35,7 +35,6 @@ namespace Potato.Core.UI
         {
             _items = items ?? new List<T>();
             _displayItems = new List<string>();
-            _font = UIManager.Instance.GetDefaultFont();
 
             foreach (var item in _items)
             {
@@ -92,7 +91,7 @@ namespace Potato.Core.UI
                     
                     if (hoveredIndex >= 0 && hoveredIndex < _items.Count)
                     {
-                        _isHovered = true;
+                        // _isHovered = true;
                         
                         // Check for click
                         if (_currentMouseState.LeftButton == ButtonState.Released &&
@@ -104,12 +103,12 @@ namespace Potato.Core.UI
                     }
                     else
                     {
-                        _isHovered = false;
+                        // _isHovered = false;
                     }
                 }
                 else
                 {
-                    _isHovered = false;
+                    // _isHovered = false;
                     
                     // Close dropdown if clicked outside
                     if (_currentMouseState.LeftButton == ButtonState.Released &&
@@ -134,6 +133,11 @@ namespace Potato.Core.UI
 
         public override void Draw(SpriteBatch spriteBatch)
         {
+            if (_font == null)
+            {
+                _font = UIManager.DefaultFont;
+            }
+
             // Draw the dropdown button
             _dropdownButton.Draw(spriteBatch);
 

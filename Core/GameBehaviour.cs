@@ -10,10 +10,31 @@ namespace Potato.Core
     /// </summary>
     public abstract class GameBehaviour
     {
-        protected Game _game;
+        protected GameManager _game;
         protected bool _isActive = false;
         protected bool _isAwakeCalled = false;
         protected bool _isStartCalled = false;
+        
+        // Propriété de priorité pour contrôler l'ordre d'exécution
+        private int _executionOrder = 0;
+        
+        /// <summary>
+        /// Priorité d'exécution du comportement. Les valeurs plus basses sont exécutées en premier.
+        /// Similaire à l'attribut ExecutionOrder de Unity.
+        /// </summary>
+        public int ExecutionOrder 
+        { 
+            get => _executionOrder;
+            set 
+            {
+                if (_executionOrder != value)
+                {
+                    _executionOrder = value;
+                    // Informer le BehaviourManager que la priorité a changé
+                    BehaviourManager.RequestSortBehaviours();
+                }
+            }
+        }
         
         public bool IsActive => _isActive;
         

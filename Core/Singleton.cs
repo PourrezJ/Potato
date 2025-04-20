@@ -28,8 +28,6 @@ namespace Potato.Core
         }
         #endregion
 
-        protected bool IsInitialized { get; private set; }
-
         public Singleton()
         {
             if (_instance != null)
@@ -41,21 +39,6 @@ namespace Potato.Core
             }
         }
 
-
-        /// <summary>
-        /// Initialise le singleton avec les références nécessaires
-        /// </summary>
-        public virtual void Initialize()
-        {
-            IsInitialized = true;
-        }
-
-        /// <summary>
-        /// Méthode de mise à jour - à implémenter par les classes dérivées
-        /// </summary>
-        public virtual void Update(GameTime gameTime)
-        {
-        }
 
         /// <summary>
         /// Méthode de dessin - à implémenter par les classes dérivées
@@ -76,7 +59,7 @@ namespace Potato.Core
         /// </summary>
         public virtual void Cleanup()
         {
-            IsInitialized = false;
+            
         }
     }
 }

@@ -8,7 +8,7 @@ using Potato.Core;
 
 namespace Potato.Engine
 {
-    public class MainMenuScreen : GameBehaviour
+    public class MainMenuScreen : Singleton<MainMenuScreen>
     {
         private SpriteFont _font;
         private Button _startButton;
@@ -24,26 +24,25 @@ namespace Potato.Engine
         public Action OnQuit;
 
         private bool _isVisible = false;
-        
+        private bool _initialized = false;
+
         public override void Awake()
         {
             base.Awake();
             Logger.Instance.Info("[MainMenuScreen] Écran de menu principal créé", LogCategory.UI);
-            InitializeUI();
         }
 
         private void InitializeUI()
         {
-            // Utiliser la police déjà chargée par le UIManager au lieu de la charger à nouveau
-            _font = UIManager.Instance.GetDefaultFont();
-            
+            // Initialiser le UIManager
+            _initialized = true;
+
+            if (_initialized)
+                return;
+
             if (_font == null)
             {
-                Logger.Instance.Warning("[MainMenuScreen] Impossible d'obtenir DefaultFont depuis UIManager", LogCategory.UI);
-            }
-            else
-            {
-                Logger.Instance.Debug("[MainMenuScreen] Police DefaultFont obtenue depuis UIManager", LogCategory.UI);
+                _font = UIManager.DefaultFont;
             }
 
             // Get screen dimensions
@@ -115,9 +114,6 @@ namespace Potato.Engine
             if (!_isVisible)
                 return;
                 
-            // Le UIManager gère désormais les interactions
-            UIManager.Instance.Update(gameTime);
-            
             // Gérer également directement les clics de souris pour la compatibilité descendante
             MouseState currentMouseState = Mouse.GetState();
             
@@ -127,6 +123,7 @@ namespace Potato.Engine
                 _previousMouseState.LeftButton == ButtonState.Pressed)
             {
                 Logger.Instance.Debug("Direct click on START button", LogCategory.UI);
+                this.Hide(); // Masquer le menu principal avant de démarrer le jeu
                 OnStartGame?.Invoke();
             }
             
@@ -156,7 +153,9 @@ namespace Potato.Engine
         {
             if (!_isVisible)
                 return;
-                
+
+            InitializeUI();
+
             // Draw background
             DrawBackground(spriteBatch);
             

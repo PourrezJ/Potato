@@ -28,7 +28,7 @@ namespace Potato.Core.Entities
 
         public virtual void Initialize()
         {
-            _game = Game1.Instance;
+            _game = GameManager.Instance;
             LoadContent();
         }
 

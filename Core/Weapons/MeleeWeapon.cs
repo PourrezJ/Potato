@@ -8,7 +8,7 @@ namespace Potato.Core.Weapons
     public class MeleeWeapon : Weapon
     {
         private float _attackRange;
-        private float _attackAngle;
+        // private float _attackAngle;
         
         public MeleeWeapon(string name) : base(name)
         {
@@ -17,7 +17,7 @@ namespace Potato.Core.Weapons
             AttackSpeed = 1.2f;
             Range = 50;
             _attackRange = 60;
-            _attackAngle = MathHelper.Pi / 3; // 60 degrees
+            // _attackAngle = MathHelper.Pi / 3; // 60 degrees
         }
         
         protected override void LoadContent()
@@ -63,7 +63,7 @@ namespace Potato.Core.Weapons
                 return;
                 
             // Get all enemies in the game
-            var enemies = Engine.GameManager.Instance.Enemies;
+            var enemies = GameManager.Instance.Enemies;
             
             foreach (var enemy in enemies)
             {

@@ -5,6 +5,7 @@ using Potato.Core;
 using Potato.Core.Entities;
 using Potato.Core.Logging;
 using System;
+using System.Collections.Generic;
 
 namespace Potato.Engine
 {
@@ -26,10 +27,10 @@ namespace Potato.Engine
         private List<Rectangle> _safeZones;
         private List<Rectangle> _dangerZones;
 
-        // Textures pour le rendu de la carte
-        private Texture2D _backgroundTexture;
-        private Texture2D _obstacleTexture;
-        private Texture2D _decorationTexture;
+        // // Textures pour le rendu de la carte
+        // private Texture2D _backgroundTexture;
+        // private Texture2D _obstacleTexture;
+        // private Texture2D _decorationTexture;
         private Texture2D _pixelTexture;  // Pour le rendu basique
 
         // Configuration de l'apparence
@@ -46,9 +47,6 @@ namespace Potato.Engine
         // Générateur de nombres aléatoires
         private Random _random;
 
-        // Référence au jeu
-        private GameManager _game;
-
         public MapManager()
         {
             _game = GameManager.Instance;
@@ -62,9 +60,9 @@ namespace Potato.Engine
         /// <summary>
         /// Initialise le gestionnaire de carte avec les références requises.
         /// </summary>
-        public override void Initialize()
+        public override void Awake()
         {
-            base.Initialize();
+            base.Awake();
 
             // Définir les dimensions de la carte basées sur la fenêtre de jeu
             UpdateMapDimensions();
@@ -307,17 +305,18 @@ namespace Potato.Engine
         {
             base.Update(gameTime);
 
-            // S'assurer que Game1 est initialisé et possède un joueur
-            if (_game == null || _game.Player == null)
+            Player player = Player.Local;
+
+            if (player == null)
                 return;
 
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
             
             // Vérifier si le joueur est dans une zone dangereuse et appliquer des effets
-            if (IsPositionInDangerZone(_game.Player.Position))
+            if (IsPositionInDangerZone(player.Position))
             {
                 // Infliger des dégâts au joueur s'il reste dans une zone dangereuse
-                _game.Player.TakeDamage(1 * deltaTime); // Dégâts graduels
+                player.TakeDamage(1 * deltaTime); // Dégâts graduels
                 
                 // Ajouter des effets visuels ou sonores si nécessaire
             }

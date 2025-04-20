@@ -28,7 +28,6 @@ namespace Potato.Core.UI
         {
             _maxValue = maxValue;
             _value = value;
-            _font = UIManager.Instance.GetDefaultFont();
         }
 
         public override void Update(GameTime gameTime)
@@ -40,6 +39,11 @@ namespace Potato.Core.UI
         {
             if (!IsVisible)
                 return;
+
+            if (_font == null)
+            {
+                _font = UIManager.DefaultFont;
+            }
                 
             // Draw background
             DrawRoundedRectangle(spriteBatch, Bounds, _backgroundColor, _cornerRadius);

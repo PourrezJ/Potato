@@ -10,7 +10,7 @@ namespace Potato.Engine
         /// </summary>
         public static Texture2D CreateRectangle(int width, int height, Color color)
         {            
-            GraphicsDevice graphicsDevice = Game1.Instance.GraphicsDevice;
+            GraphicsDevice graphicsDevice = GameManager.Instance.GraphicsDevice;
 
             Texture2D texture = new Texture2D(graphicsDevice, width, height);
             Color[] colorData = new Color[width * height];
@@ -29,7 +29,7 @@ namespace Potato.Engine
         /// </summary>
         public static Texture2D CreateCircle(int radius, Color color)
         {
-            GraphicsDevice graphicsDevice = Game1.Instance.GraphicsDevice;
+            GraphicsDevice graphicsDevice = GameManager.Instance.GraphicsDevice;
 
             int diameter = radius * 2;
             Texture2D texture = new Texture2D(graphicsDevice, diameter, diameter);
@@ -65,7 +65,7 @@ namespace Potato.Engine
         /// </summary>
         public static Texture2D CreateTriangle(int width, int height, Color color)
         {            
-            GraphicsDevice graphicsDevice = Game1.Instance.GraphicsDevice;
+            GraphicsDevice graphicsDevice = GameManager.Instance.GraphicsDevice;
 
             Texture2D texture = new Texture2D(graphicsDevice, width, height);
             Color[] colorData = new Color[width * height];

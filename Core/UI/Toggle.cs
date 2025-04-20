@@ -34,7 +34,6 @@ namespace Potato.Core.UI
         {
             _isOn = isOn;
             _label = label;
-            _font = UIManager.Instance.GetDefaultFont();
         }
 
         public override void Update(GameTime gameTime)
@@ -83,6 +82,11 @@ namespace Potato.Core.UI
 
         public override void Draw(SpriteBatch spriteBatch)
         {
+            if (_font == null)
+            {
+                _font = UIManager.DefaultFont;
+            }
+
             // Draw the switch background
             Rectangle switchRect = new Rectangle(
                 (int)Position.X,

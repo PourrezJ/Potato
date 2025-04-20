@@ -34,13 +34,6 @@ namespace Potato.Core.UI
             _hasTitle = !string.IsNullOrEmpty(title);
         }
 
-        public override void Initialize(GraphicsDevice graphicsDevice)
-        {
-            base.Initialize(graphicsDevice);
-
-            _font = UIManager.Instance.GetDefaultFont();
-        }
-
         public override void Update(GameTime gameTime)
         {
             // Update all child elements
@@ -55,6 +48,11 @@ namespace Potato.Core.UI
 
         public override void Draw(SpriteBatch spriteBatch)
         {
+            if (_font == null)
+            {
+                _font = UIManager.DefaultFont;
+            }
+
             // Dessiner la bordure si activée
             if (HasBorder)
             {

@@ -42,7 +42,6 @@ namespace Potato.Core.UI
             : base(position, size)
         {
             _placeholder = placeholder;
-            _font = UIManager.Instance.GetDefaultFont();
         }
 
         public override void Update(GameTime gameTime)
@@ -371,6 +370,11 @@ namespace Potato.Core.UI
 
         public override void Draw(SpriteBatch spriteBatch)
         {
+            if (_font == null)
+            {
+                _font = UIManager.DefaultFont;
+            }
+
             // Draw background
             Color bgColor = _isFocused ? _focusedColor : _backgroundColor;
             DrawRoundedRectangle(spriteBatch, Bounds, bgColor, _cornerRadius);

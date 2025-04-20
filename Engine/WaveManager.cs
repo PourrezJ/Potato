@@ -26,9 +26,6 @@ namespace Potato.Engine
         private readonly float _enemySpawnInterval = 2.0f;
         private float _enemySpawnTimer;
         
-        // Référence au GameManager
-        private GameManager _game;
-
         // Calcule la durée d'une vague en fonction de son numéro
         public float GetWaveDuration(int waveNumber)
         {

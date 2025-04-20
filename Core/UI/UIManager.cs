@@ -4,99 +4,51 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Potato.Core.Logging;
+using Potato.Core.Attributes;
 
 namespace Potato.Core.UI
 {
+    [ExecutionOrder(ExecutionOrderAttribute.EarlyPriority)]
     public class UIManager : Singleton<UIManager>
     {
-        private static UIManager _instance;
-        public static UIManager Instance
-        {
+        public static SpriteFont DefaultFont {
             get
             {
-                if (_instance == null)
-                    _instance = new UIManager();
-                return _instance;
+                if (_defaultFont == null)
+                {
+                    _defaultFont = GameManager.Instance.Content.Load<SpriteFont>("DefaultFont");
+                }
+                return _defaultFont;
             }
+            set => _defaultFont = value;
         }
+        private static SpriteFont _defaultFont;
+
 
         private List<UIElement> _elements = new List<UIElement>();
-        private SpriteFont _defaultFont;
         private Texture2D _pixel;
         private MouseState _previousMouseState;
         private UIElement _hoveredElement;
         private UIElement _pressedElement;
-        
-        // Propriété pour indiquer si l'initialisation a réussi
-        public bool IsInitialized { get; private set; } = false;
 
         public UIManager() { }
 
-        public void Initialize(Game game)
+        public override void Awake()
         {
+            base.Awake();
+
             try 
             {
-                // Charger la police par défaut depuis le Content Manager du jeu
-                _defaultFont = game.Content.Load<SpriteFont>("DefaultFont");
-                
                 // Créer une texture pixel blanc pour les dessins primitifs
-                _pixel = new Texture2D(game.GraphicsDevice, 1, 1);
+                _pixel = new Texture2D(_game.GraphicsDevice, 1, 1);
                 _pixel.SetData(new[] { Color.White });
                 
-                IsInitialized = true;
                 Logger.Instance.Info("UIManager initialisé avec succès", LogCategory.UI);
             }
             catch (Exception ex) 
             {
-                IsInitialized = false;
                 Logger.Instance.Error($"Erreur lors de l'initialisation du UIManager: {ex.Message}", LogCategory.UI);
             }
-        }
-
-        // Méthode d'assistance pour obtenir la police par défaut de manière sécurisée
-        public SpriteFont GetDefaultFont()
-        {
-            if (!IsInitialized)
-            {
-                Logger.Instance.Warning("Tentative d'accès à DefaultFont alors que UIManager n'est pas initialisé", LogCategory.UI);
-                return null;
-            }
-                
-            if (_defaultFont == null)
-            {
-                Logger.Instance.Warning("Tentative d'accès à DefaultFont alors qu'elle n'est pas chargée", LogCategory.UI);
-                return null; // Assurons-nous de retourner null clairement ici
-            }
-            return _defaultFont;
-        }
-
-        // Pour assurer la compatibilité avec le code existant
-        public SpriteFont DefaultFont
-        {
-            get { return GetDefaultFont(); }
-        }
-
-        // Méthode pour définir la police par défaut après l'initialisation
-        public void SetDefaultFont(SpriteFont font)
-        {
-            _defaultFont = font;
-            
-            // Créer la texture pixel si ce n'est pas déjà fait
-            if (_pixel == null && !IsInitialized)
-            {
-                try
-                {
-                    _pixel = new Texture2D(Game1.Instance.GraphicsDevice, 1, 1);
-                    _pixel.SetData(new[] { Color.White });
-                }
-                catch (Exception ex)
-                {
-                    Logger.Instance.Error($"Erreur lors de la création du pixel: {ex.Message}", LogCategory.UI);
-                }
-            }
-            
-            IsInitialized = true;
-            Logger.Instance.Info("UIManager: Police DefaultFont définie avec succès", LogCategory.UI);
         }
 
         public void AddElement(UIElement element)
@@ -119,7 +71,7 @@ namespace Potato.Core.UI
             return _elements.Contains(element);
         }
 
-        public void Update(GameTime gameTime)
+        public override void Update(GameTime gameTime)
         {
             // Obtenir l'état actuel de la souris
             var currentMouseState = Mouse.GetState();
@@ -349,8 +301,10 @@ namespace Potato.Core.UI
             );
         }
 
-        public void Draw(SpriteBatch spriteBatch)
+        public override void Draw(SpriteBatch spriteBatch)
         {
+            base.Draw(spriteBatch);
+
             foreach (var element in _elements)
             {
                 if (element != null && element.IsVisible)
@@ -369,9 +323,9 @@ namespace Potato.Core.UI
                     // Si possible, tenter de créer un pixel à la volée si GraphicsDevice est disponible
                     try
                     {
-                        if (Game1.Instance != null && Game1.Instance.GraphicsDevice != null)
+                        if (GameManager.Instance != null && GameManager.Instance.GraphicsDevice != null)
                         {
-                            _pixel = new Texture2D(Game1.Instance.GraphicsDevice, 1, 1);
+                            _pixel = new Texture2D(GameManager.Instance.GraphicsDevice, 1, 1);
                             _pixel.SetData(new[] { Color.White });
                             Logger.Instance.Info("Pixel créé à la volée", LogCategory.UI);
                         }

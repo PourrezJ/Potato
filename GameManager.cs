@@ -27,8 +27,6 @@ public class GameManager : Game
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
     private SpriteFont _font;
-    private KeyboardState _previousKeyboardState;
-    private MouseState _previousMouseState;
 
     #endregion
 
@@ -54,10 +52,6 @@ public class GameManager : Game
     #region Screens and UI
 
     private LogViewer _logViewer;
-    private CharacterSelectionScreen _characterSelectionScreen;
-    private MainMenuScreen _mainMenuScreen;
-    private PauseMenu _pauseMenu;
-    private ShopScreen _shopScreen;
 
     #endregion
 
@@ -134,20 +128,15 @@ public class GameManager : Game
 
     protected override void Initialize()
     {
-        // Initialiser le UIManager en PREMIER pour que la police soit disponible
-        // Note: On ne peut pas charger le font ici car Content n'est pas prêt,
-        // mais on peut initialiser la structure de UIManager
-        UIManager.Instance.Initialize(this);
-        
         // Initialiser le BehaviourManager
-        BehaviourManager.Instance.Initialize(this);
+        BehaviourManager.DiscoverBehaviours();
         Logger.Instance.Info("BehaviourManager initialisé", LogCategory.Core);
         
         // Initialiser les gestionnaires de jeu
-        _waveManager = new WaveManager();
-        _mapManager = new MapManager();
+        _waveManager = WaveManager.Instance;
+        _mapManager = MapManager.Instance;
         _waveManager.OnWaveCompleted += OnWaveCompletedHandler;
-        
+        /*
         // Initialize main menu screen
         _mainMenuScreen = new MainMenuScreen();
         _mainMenuScreen.OnStartGame += () => {
@@ -163,18 +152,11 @@ public class GameManager : Game
         _mainMenuScreen.OnQuit += () => {
             Exit();
         };
-        
-        // Enregistrer l'écran principal auprès du BehaviourManager
-        BehaviourManager.Instance.RegisterBehaviour(_mainMenuScreen);
-        
-        // Initialize character selection screen
-        _characterSelectionScreen = new CharacterSelectionScreen();
-        BehaviourManager.Instance.RegisterBehaviour(_characterSelectionScreen);
-        
+        */
         base.Initialize();
         
         // Show main menu after initialization
-        _mainMenuScreen.Show();
+        MainMenuScreen.Instance.Show();
     }
 
     protected override void LoadContent()
@@ -183,44 +165,19 @@ public class GameManager : Game
         
         // Load DefaultFont
         try
-        {
-            _font = Content.Load<SpriteFont>("DefaultFont");
-            Logger.Instance.Info("DefaultFont loaded successfully.");
-            
-            // Mettre à jour UIManager avec la police chargée
-            // (Il a déjà été initialisé dans Initialize(), mais sans police)
-            UIManager.Instance.SetDefaultFont(_font);
-            
+        {        
             // Initialize log viewer
             _logViewer = new LogViewer(this, _font);
             Logger.Instance.Info("LogViewer initialized");
             
-            // Initialize pause menu after loading font
-            _pauseMenu = new PauseMenu(this);
-            BehaviourManager.Instance.RegisterBehaviour(_pauseMenu);
-            _pauseMenu.OnResume += () => {
-                _currentGameState = GameState.Playing;
-            };
-            _pauseMenu.OnQuit += () => {
-                RestartGame();
-            };
-            Logger.Instance.Info("Pause Menu initialized");
 
-            // Initialize shop screen
-            try
-            {
-                Logger.Instance.Info("Starting ShopScreen initialization...");
-                _shopScreen = new ShopScreen();
-                BehaviourManager.Instance.RegisterBehaviour(_shopScreen);
-                Logger.Instance.Info("Shop Screen initialized successfully");
-            }
-            catch (Exception shopEx)
-            {
-                Logger.Instance.Error($"Error initializing ShopScreen: {shopEx.Message}");
-            }
-                   
-            // Ajouter un log avant la découverte des comportements
-            Logger.Instance.Info("Attempting to discover behaviors...");
+            // _pauseMenu.OnResume += () => {
+            //     _currentGameState = GameState.Playing;
+            // };
+            // _pauseMenu.OnQuit += () => {
+            //     RestartGame();
+            // };
+
             
             try 
             {
@@ -243,7 +200,10 @@ public class GameManager : Game
     }
 
     protected override void Update(GameTime gameTime)
-    {
+    {        
+        // Mettre à jour tous les GameBehaviours via le BehaviourManager
+        BehaviourManager.Update(gameTime);
+
         // Read input
         KeyboardState currentKeyboardState = Keyboard.GetState();
         MouseState currentMouseState = Mouse.GetState();
@@ -267,12 +227,7 @@ public class GameManager : Game
                 break;
         }
         
-        // Mettre à jour tous les GameBehaviours via le BehaviourManager
-        BehaviourManager.Instance.Update(gameTime);
 
-        // Save keyboard/mouse state
-        _previousKeyboardState = currentKeyboardState;
-        _previousMouseState = currentMouseState;
 
         base.Update(gameTime);
     }
@@ -293,11 +248,8 @@ public class GameManager : Game
         }
         
         // Dessiner tous les GameBehaviours via le BehaviourManager
-        BehaviourManager.Instance.Draw(_spriteBatch);
-        
-        // Draw UI Manager elements for all states
-        UIManager.Instance.Draw(_spriteBatch);
-        
+        BehaviourManager.Draw(_spriteBatch);
+             
         // Draw LogViewer on top of everything if it's visible
         _logViewer?.Draw(_spriteBatch);
         
@@ -515,7 +467,7 @@ public class GameManager : Game
 
     public void StartNextWave()
     {
-        _shopScreen.CloseShop();
+        ShopScreen.Instance.CloseShop();
         SetGameState(GameState.Playing);
 
         StartWave(Wave + 1);
@@ -538,7 +490,7 @@ public class GameManager : Game
             ResetPlayerPosition();
 
             // Create shop screen
-            _shopScreen.OpenShop();
+            ShopScreen.Instance.OpenShop();
             
             // Change game state
             SetGameState(GameState.Shopping);

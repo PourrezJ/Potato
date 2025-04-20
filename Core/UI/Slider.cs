@@ -38,7 +38,6 @@ namespace Potato.Core.UI
             _value = MathHelper.Clamp(value, minValue, maxValue);
             _step = 0; // Default to no stepping
             _label = label;
-            _font = UIManager.Instance.GetDefaultFont();
         }
 
         public override void Update(GameTime gameTime)
@@ -98,6 +97,11 @@ namespace Potato.Core.UI
 
         public override void Draw(SpriteBatch spriteBatch)
         {
+            if (_font == null)
+            {
+                _font = UIManager.DefaultFont;
+            }
+
             // Draw label if present
             if (_font != null && !string.IsNullOrEmpty(_label))
             {

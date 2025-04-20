@@ -47,12 +47,12 @@ namespace Potato.Core.Weapons
             try
             {
                 // Essayer de charger la texture de l'arme
-                _texture = Game1.Instance.Content.Load<Texture2D>(Name.ToLower());
+                _texture = GameManager.Instance.Content.Load<Texture2D>(Name.ToLower());
             }
             catch
             {
                 // Si la texture n'existe pas, utiliser une texture de remplacement
-                _texture = new Texture2D( Game1.Instance.GraphicsDevice, 1, 1);
+                _texture = new Texture2D( GameManager.Instance.GraphicsDevice, 1, 1);
                 _texture.SetData(new[] { Color.White });
             }
         }
@@ -235,7 +235,7 @@ namespace Potato.Core.Weapons
             float closestDistance = float.MaxValue;
             
             // Get all enemies from the GameManager
-            var enemies = Engine.GameManager.Instance.GetEnemies();
+            var enemies = GameManager.Instance.GetEnemies();
             
             foreach (var enemy in enemies)
             {

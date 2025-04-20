@@ -7,7 +7,6 @@ using Potato.Core.Weapons;
 using Potato.Core.UI;
 using System;
 using Potato.Core;
-using Potato;  // Ajout de l'espace de noms principal
 
 namespace Potato.Engine
 {
@@ -17,7 +16,7 @@ namespace Potato.Engine
         private List<Weapon> _startingWeapons;
         private int _selectedCharacterIndex;
         private int _selectedWeaponIndex;
-        private KeyboardState _previousKeyboardState;
+        // private KeyboardState _previousKeyboardState;
         private MouseState _previousMouseState;
         private bool _isSelectionConfirmed;
         private SpriteFont _font;
@@ -60,8 +59,10 @@ namespace Potato.Engine
         private Color _negativeStatColor = new Color(255, 100, 100);
         private Color _confirmButtonColor = new Color(50, 180, 50, 230); // Green for confirm button
         
-        public CharacterSelectionScreen()
+        public override void Start()
         {
+            base.Awake();
+
             _game = GameManager.Instance;
             _characters = new List<PlayerCharacter>();
             _startingWeapons = new List<Weapon>();
@@ -434,14 +435,7 @@ namespace Potato.Engine
             _selectionTimer += deltaTime;
             
             // Mettre à jour le gestionnaire d'animations
-            AnimationManager.Instance.Update(gameTime);
-            
-            // Exit selection screen if selection is confirmed
-            if (_isSelectionConfirmed)
-                return;
-                
-            // Update UI Manager (this will handle all UI element updates)
-            UIManager.Instance.Update(gameTime);
+            AnimationManager.Instance.Update(gameTime);                          
         }
         
         public override void Draw(SpriteBatch spriteBatch)

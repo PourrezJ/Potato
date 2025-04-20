@@ -260,18 +260,9 @@ namespace Potato.Core.UI
             if (string.IsNullOrEmpty(Text))
                 return;
                 
-            // Charger la police au moment du dessin si elle n'est pas encore définie
-            // Cela permet de retarder l'accès à la police jusqu'à ce que UIManager soit initialisé
-            if (Font == null && UIManager.Instance.IsInitialized)
-            {
-                Font = UIManager.Instance.DefaultFont;
-            }
-            
-            // Si nous n'avons toujours pas de police, sortir
             if (Font == null)
             {
-                Logger.Instance.Debug($"Police non disponible pour le bouton '{Text}'", LogCategory.UI);
-                return;
+                Font = UIManager.DefaultFont;
             }
             
             // Dessiner l'icône si disponible

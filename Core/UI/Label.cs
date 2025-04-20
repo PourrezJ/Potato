@@ -21,7 +21,6 @@ namespace Potato.Core.UI
             : base(position, Vector2.Zero)
         {
             _text = text;
-            _font = UIManager.Instance.GetDefaultFont();
             UpdateSize();
         }
         
@@ -29,7 +28,6 @@ namespace Potato.Core.UI
             : base(position, size)
         {
             _text = text;
-            _font = UIManager.Instance.GetDefaultFont();
             _autoSize = false;
         }
         
@@ -57,6 +55,11 @@ namespace Potato.Core.UI
                 DrawRoundedRectangle(spriteBatch, Bounds, _backgroundColor, _cornerRadius);
             }
             
+            if (_font == null)
+            {
+                _font = UIManager.DefaultFont;
+            }
+
             // Draw text if font is available
             if (_font != null && !string.IsNullOrEmpty(_text))
             {

@@ -64,10 +64,8 @@ namespace Potato.Engine
         /// <summary>
         /// Crée une nouvelle instance du menu pause
         /// </summary>
-        /// <param name="game">Référence à l'instance du jeu</param>
-        public PauseMenu(Game game)
+        public PauseMenu()
         {
-            _game = game;
             _showingOptions = false;
             _isVisible = false;
         }
@@ -75,19 +73,7 @@ namespace Potato.Engine
         public override void Awake()
         {
             base.Awake();
-            
-            // Utiliser la police déjà chargée par le UIManager au lieu de la charger à nouveau
-            _font = UIManager.Instance.GetDefaultFont();
-            
-            if (_font == null)
-            {
-                Logger.Instance.Warning("Menu Pause: impossible d'obtenir DefaultFont depuis UIManager", LogCategory.UI);
-            }
-            else
-            {
-                Logger.Instance.Info("Menu Pause: police DefaultFont obtenue depuis UIManager", LogCategory.UI);
-            }
-            
+                 
             // Créer les textures de base et calculer les positions des boutons
             CreateTextures();
             CalculateButtonPositions();
@@ -338,6 +324,11 @@ namespace Potato.Engine
             if (!_isVisible || _panel == null || _buttonTexture == null)
                 return;
                 
+            if (_font == null)
+            {
+                _font = UIManager.DefaultFont;
+            }
+
             // Obtenir les dimensions de l'écran
             int screenWidth = _game.GraphicsDevice.Viewport.Width;
             int screenHeight = _game.GraphicsDevice.Viewport.Height;
