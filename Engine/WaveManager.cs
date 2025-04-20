@@ -6,7 +6,12 @@ using Potato.Core;
 
 namespace Potato.Engine
 {
-    public class WaveManager : Singleton<WaveManager>
+    /// <summary>
+    /// Gère la génération de vagues d'ennemis et leur progression.
+    /// Cette classe est maintenant un GameBehaviour, ce qui signifie qu'elle doit être attachée à un GameObject
+    /// et être initialisée par les scènes.
+    /// </summary>
+    public class WaveManager : GameBehaviour
     {
         // Propriétés des vagues
         public int CurrentWave { get; private set; }
@@ -21,6 +26,10 @@ namespace Potato.Engine
         private readonly Random _random;
         private readonly float _enemySpawnInterval = 2.0f;
         private float _enemySpawnTimer;
+        
+        // Instance statique pour la transition
+        private static WaveManager _instance;
+        public static WaveManager Instance => _instance;
         
         // Calcule la durée d'une vague en fonction de son numéro
         public float GetWaveDuration(int waveNumber)
@@ -47,12 +56,38 @@ namespace Potato.Engine
             IsReadyForNextWave = false;
             _random = new Random();
             _enemySpawnTimer = 0;
-
-            _game = GameManager.Instance;
+            
+            // Conserver une référence à l'instance pour la transition
+            _instance = this;
         }
         
+        /// <summary>
+        /// Appelé lorsque le GameObject est activé
+        /// </summary>
+        public override void OnEnable()
+        {
+            base.OnEnable();
+            Logger.Instance.Info("WaveManager activé", LogCategory.Gameplay);
+        }
+        
+        /// <summary>
+        /// Appelé lorsque le GameObject est désactivé
+        /// </summary>
+        public override void OnDisable()
+        {
+            base.OnDisable();
+            Logger.Instance.Info("WaveManager désactivé", LogCategory.Gameplay);
+        }
+        
+        /// <summary>
+        /// Appelé à chaque frame lorsque le GameObject est actif
+        /// </summary>
         public override void Update(GameTime gameTime)
         {
+            // Si le WaveManager n'est pas actif, ne rien faire
+            if (!IsActive)
+                return;
+                
             float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
             
             // Debug fixe pour identifier l'état des vagues à chaque update
@@ -223,10 +258,11 @@ namespace Potato.Engine
             System.Diagnostics.Debug.WriteLine($"[DEBUG-SPAWN] ✅ Ennemi créé à la position {spawnPosition}, total: {_game.Enemies.Count}");
         }
         
-        public override void Reset()
+        /// <summary>
+        /// Réinitialise le WaveManager à son état initial
+        /// </summary>
+        public void Reset()
         {
-            base.Reset();
-
             CurrentWave = 1;
             WaveTimer = 0;
             IsBetweenWaves = false;

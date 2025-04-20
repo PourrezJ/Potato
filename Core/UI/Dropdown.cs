@@ -178,7 +178,7 @@ namespace Potato.Core.UI
                     }
                     
                     // Draw item background
-                    spriteBatch.Draw(UIManager.Instance.Pixel, itemArea, itemColor);
+                    spriteBatch.Draw(UIManager.Pixel, itemArea, itemColor);
                     
                     // Draw item text
                     if (_font != null)
@@ -226,7 +226,7 @@ namespace Potato.Core.UI
             
             // Draw triangle indicator
             // (In a real implementation, you might want to use an actual triangle texture)
-            spriteBatch.Draw(UIManager.Instance.Pixel, indicatorRect, Color.LightGray);
+            spriteBatch.Draw(UIManager.Pixel, indicatorRect, Color.LightGray);
         }
         
         private void DrawRoundedRectangle(SpriteBatch spriteBatch, Rectangle rectangle, Color color, float radius)
@@ -234,7 +234,7 @@ namespace Potato.Core.UI
             // Implementation similar to Button's DrawRoundedRectangle
             if (radius <= 0)
             {
-                spriteBatch.Draw(UIManager.Instance.Pixel, rectangle, color);
+                spriteBatch.Draw(UIManager.Pixel, rectangle, color);
                 return;
             }
 
@@ -246,7 +246,7 @@ namespace Potato.Core.UI
                 rectangle.Width - (int)(radius * 2),
                 rectangle.Height - (int)(radius * 2)
             );
-            spriteBatch.Draw(UIManager.Instance.Pixel, centerRect, color);
+            spriteBatch.Draw(UIManager.Pixel, centerRect, color);
 
             Rectangle topRect = new Rectangle(
                 rectangle.X + (int)radius,
@@ -254,7 +254,7 @@ namespace Potato.Core.UI
                 rectangle.Width - (int)(radius * 2),
                 (int)radius
             );
-            spriteBatch.Draw(UIManager.Instance.Pixel, topRect, color);
+            spriteBatch.Draw(UIManager.Pixel, topRect, color);
 
             Rectangle bottomRect = new Rectangle(
                 rectangle.X + (int)radius,
@@ -262,7 +262,7 @@ namespace Potato.Core.UI
                 rectangle.Width - (int)(radius * 2),
                 (int)radius
             );
-            spriteBatch.Draw(UIManager.Instance.Pixel, bottomRect, color);
+            spriteBatch.Draw(UIManager.Pixel, bottomRect, color);
 
             Rectangle leftRect = new Rectangle(
                 rectangle.X,
@@ -270,7 +270,7 @@ namespace Potato.Core.UI
                 (int)radius,
                 rectangle.Height - (int)(radius * 2)
             );
-            spriteBatch.Draw(UIManager.Instance.Pixel, leftRect, color);
+            spriteBatch.Draw(UIManager.Pixel, leftRect, color);
 
             Rectangle rightRect = new Rectangle(
                 rectangle.X + rectangle.Width - (int)radius,
@@ -278,7 +278,7 @@ namespace Potato.Core.UI
                 (int)radius,
                 rectangle.Height - (int)(radius * 2)
             );
-            spriteBatch.Draw(UIManager.Instance.Pixel, rightRect, color);
+            spriteBatch.Draw(UIManager.Pixel, rightRect, color);
         }
 
         private void ToggleDropdown(UIElement _)

@@ -24,7 +24,7 @@ namespace Potato.Core.UI
         public void ShowCanvas(string canvasName)
         {
             // Vérifier si le canvas existe, sinon le créer
-            var canvas = UIManager.Instance.GetCanvas(canvasName);
+            var canvas = UIManager.GetCanvas(canvasName);
             if (canvas == null)
             {
                 Logger.Instance.Warning($"Le canvas '{canvasName}' n'existe pas et ne peut pas être affiché", LogCategory.UI);
@@ -32,7 +32,7 @@ namespace Potato.Core.UI
             }
             
             // Afficher le canvas
-            UIManager.Instance.ShowCanvas(canvasName);
+            UIManager.ShowCanvas(canvasName);
             
             // Ajouter à la liste des canvas visibles s'il n'y est pas déjà
             if (!_visibleCanvases.Contains(canvasName))
@@ -48,7 +48,7 @@ namespace Potato.Core.UI
         public void HideCanvas(string canvasName)
         {
             // Masquer le canvas
-            UIManager.Instance.HideCanvas(canvasName);
+            UIManager.HideCanvas(canvasName);
             
             // Retirer de la liste des canvas visibles
             if (_visibleCanvases.Contains(canvasName))

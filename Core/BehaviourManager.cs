@@ -38,54 +38,79 @@ namespace Potato.Core
                 var behaviourTypes = assembly.GetTypes()
                     .Where(t => t.IsSubclassOf(typeof(GameBehaviour)) && !t.IsAbstract);
                 
-                int count = 0;
+                // Séparer les comportements "prioritaires" qui doivent être initialisés en premier
+                var priorityTypes = new List<Type>();
+                var normalTypes = new List<Type>();
+                
+                // Classer les types selon leur priorité
                 foreach (var type in behaviourTypes)
                 {
-                    try
+                    // Les gestionnaires doivent être initialisés en premier
+                    if (type.Name.Contains("Manager") || type.Name.Contains("Service"))
                     {
-                        // Vérifier si ce type a déjà été instancié
-                        bool alreadyExists = _behaviours.Any(b => b.GetType() == type);
-                        if (alreadyExists)
-                        {
-                            Logger.Instance.Debug($"Comportement {type.Name} déjà instancié, ignoré", LogCategory.Core);
-                            continue;
-                        }
-                        
-                        //Logger.Instance.Debug($"Tentative de création du behaviour {type.Name}", LogCategory.Core);
-                        
-                        // Essayer d'abord le constructeur sans paramètre
-                        var defaultConstructor = type.GetConstructor(Type.EmptyTypes);
-                        if (defaultConstructor != null)
-                        {
-                            var behaviour = (GameBehaviour)defaultConstructor.Invoke(null);
-                            RegisterBehaviour(behaviour);
-                            count++;
-                            continue;
-                        }
-                        
-                        // Puis essayer le constructeur avec Game
-                        var gameConstructor = type.GetConstructor(new[] { typeof(Game) });
-                        if (gameConstructor != null && game != null)
-                        {
-                            var behaviour = (GameBehaviour)gameConstructor.Invoke(new object[] { game });
-                            RegisterBehaviour(behaviour);
-                            count++;
-                            continue;
-                        }
-                        
-                        Logger.Instance.Warning($"Impossible de créer le behaviour {type.Name} : aucun constructeur compatible", LogCategory.Core);
+                        priorityTypes.Add(type);
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        Logger.Instance.Error($"Erreur lors de la création du behaviour {type.Name}: {ex.Message}", LogCategory.Core);
+                        normalTypes.Add(type);
                     }
                 }
                 
-                //Logger.Instance.Info($"Découvert {count} behaviours via réflexion", LogCategory.Core);
+                // Initialiser d'abord les types prioritaires
+                InstantiateBehaviourTypes(priorityTypes, game);
+                
+                // Puis initialiser les types normaux
+                InstantiateBehaviourTypes(normalTypes, game);
+                
+                //Logger.Instance.Info($"Découvert {_behaviours.Count} behaviours via réflexion", LogCategory.Core);
             }
             catch (Exception ex)
             {
                 Logger.Instance.Error($"Erreur lors de la découverte des behaviours: {ex.Message}", LogCategory.Core);
+            }
+        }
+        
+        /// <summary>
+        /// Instancie une liste de types de GameBehaviour
+        /// </summary>
+        private static void InstantiateBehaviourTypes(List<Type> types, GameManager game)
+        {
+            foreach (var type in types)
+            {
+                try
+                {
+                    // Vérifier si ce type a déjà été instancié
+                    bool alreadyExists = _behaviours.Any(b => b.GetType() == type);
+                    if (alreadyExists)
+                    {
+                        Logger.Instance.Debug($"Comportement {type.Name} déjà instancié, ignoré", LogCategory.Core);
+                        continue;
+                    }
+                    
+                    // Essayer d'abord le constructeur sans paramètre
+                    var defaultConstructor = type.GetConstructor(Type.EmptyTypes);
+                    if (defaultConstructor != null)
+                    {
+                        var behaviour = (GameBehaviour)defaultConstructor.Invoke(null);
+                        RegisterBehaviour(behaviour);
+                        continue;
+                    }
+                    
+                    // Puis essayer le constructeur avec Game
+                    var gameConstructor = type.GetConstructor(new[] { typeof(Game) });
+                    if (gameConstructor != null && game != null)
+                    {
+                        var behaviour = (GameBehaviour)gameConstructor.Invoke(new object[] { game });
+                        RegisterBehaviour(behaviour);
+                        continue;
+                    }
+                    
+                    Logger.Instance.Warning($"Impossible de créer le behaviour {type.Name} : aucun constructeur compatible", LogCategory.Core);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Instance.Error($"Erreur lors de la création du behaviour {type.Name}: {ex.Message}", LogCategory.Core);
+                }
             }
         }
         

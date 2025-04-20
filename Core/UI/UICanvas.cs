@@ -15,7 +15,6 @@ namespace Potato.Core.UI
     public class UICanvas : GameBehaviour
     {
         private List<UIElement> _rootElements = new List<UIElement>();
-        private UIManager _uiManager;
         private bool _isVisible = true;
         private string _name;
 
@@ -37,18 +36,26 @@ namespace Potato.Core.UI
         public UICanvas(string name = "Canvas")
         {
             _name = name;
-            _uiManager = UIManager.Instance;
+            // Ne pas initialiser _uiManager ici, le faire dans Awake() pour éviter les problèmes de timing
         }
 
         public override void Awake()
         {
             base.Awake();
-            _uiManager.RegisterCanvas(this);
+            try
+            {
+                UIManager.RegisterCanvas(this);
+            }
+            catch (Exception ex)
+            {
+                Logger.Instance.Error($"Error during UICanvas Awake: {ex.Message}", LogCategory.UI);
+            }
         }
 
         public override void OnDestroy()
         {
-            _uiManager.UnregisterCanvas(this);
+                UIManager.UnregisterCanvas(this);
+
             ClearElements();
             base.OnDestroy();
         }

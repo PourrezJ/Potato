@@ -410,7 +410,7 @@ namespace Potato.Core.UI
                     (int)selectionSize.X,
                     (int)_font.MeasureString("M").Y);
                     
-                spriteBatch.Draw(UIManager.Instance.Pixel, selectionRect, _selectionColor);
+                spriteBatch.Draw(UIManager.Pixel, selectionRect, _selectionColor);
             }
             
             // Draw text
@@ -429,7 +429,7 @@ namespace Potato.Core.UI
                 Vector2 cursorSize = new Vector2(1, _font.MeasureString("M").Y);
                 
                 spriteBatch.Draw(
-                    UIManager.Instance.Pixel,
+                    UIManager.Pixel,
                     new Rectangle(
                         (int)cursorPosition.X,
                         (int)cursorPosition.Y,
@@ -443,7 +443,7 @@ namespace Potato.Core.UI
                 Vector2 cursorSize = new Vector2(1, _font.MeasureString("M").Y);
                 
                 spriteBatch.Draw(
-                    UIManager.Instance.Pixel,
+                    UIManager.Pixel,
                     new Rectangle(
                         (int)textPosition.X,
                         (int)textPosition.Y,
@@ -458,7 +458,7 @@ namespace Potato.Core.UI
             // Implementation similar to Button's DrawRoundedRectangle
             if (radius <= 0)
             {
-                spriteBatch.Draw(UIManager.Instance.Pixel, rectangle, color);
+                spriteBatch.Draw(UIManager.Pixel, rectangle, color);
                 return;
             }
 
@@ -470,7 +470,7 @@ namespace Potato.Core.UI
                 rectangle.Width - (int)(radius * 2),
                 rectangle.Height - (int)(radius * 2)
             );
-            spriteBatch.Draw(UIManager.Instance.Pixel, centerRect, color);
+            spriteBatch.Draw(UIManager.Pixel, centerRect, color);
 
             Rectangle topRect = new Rectangle(
                 rectangle.X + (int)radius,
@@ -478,7 +478,7 @@ namespace Potato.Core.UI
                 rectangle.Width - (int)(radius * 2),
                 (int)radius
             );
-            spriteBatch.Draw(UIManager.Instance.Pixel, topRect, color);
+            spriteBatch.Draw(UIManager.Pixel, topRect, color);
 
             Rectangle bottomRect = new Rectangle(
                 rectangle.X + (int)radius,
@@ -486,7 +486,7 @@ namespace Potato.Core.UI
                 rectangle.Width - (int)(radius * 2),
                 (int)radius
             );
-            spriteBatch.Draw(UIManager.Instance.Pixel, bottomRect, color);
+            spriteBatch.Draw(UIManager.Pixel, bottomRect, color);
 
             Rectangle leftRect = new Rectangle(
                 rectangle.X,
@@ -494,7 +494,7 @@ namespace Potato.Core.UI
                 (int)radius,
                 rectangle.Height - (int)(radius * 2)
             );
-            spriteBatch.Draw(UIManager.Instance.Pixel, leftRect, color);
+            spriteBatch.Draw(UIManager.Pixel, leftRect, color);
 
             Rectangle rightRect = new Rectangle(
                 rectangle.X + rectangle.Width - (int)radius,
@@ -502,7 +502,7 @@ namespace Potato.Core.UI
                 (int)radius,
                 rectangle.Height - (int)(radius * 2)
             );
-            spriteBatch.Draw(UIManager.Instance.Pixel, rightRect, color);
+            spriteBatch.Draw(UIManager.Pixel, rightRect, color);
         }
 
         // Public properties

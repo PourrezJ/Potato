@@ -104,7 +104,11 @@ namespace Potato.Core
                 {
                     if (!gameObject.IsDestroyed && gameObject.IsActive)
                     {
-                        gameObject.Update(gameTime);
+                        // Ne mettre à jour que les objets de la scène active ou les objets persistants
+                        if (gameObject.Scene == SceneManager.ActiveScene || Scene.IsPersistent(gameObject))
+                        {
+                            gameObject.Update(gameTime);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -132,7 +136,11 @@ namespace Potato.Core
                 {
                     if (!gameObject.IsDestroyed && gameObject.IsActive)
                     {
-                        gameObject.Draw(spriteBatch);
+                        // Ne dessiner que les objets de la scène active ou les objets persistants
+                        if (gameObject.Scene == SceneManager.ActiveScene || Scene.IsPersistent(gameObject))
+                        {
+                            gameObject.Draw(spriteBatch);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -151,6 +159,16 @@ namespace Potato.Core
         /// </summary>
         public static GameObject Find(string name)
         {
+            // Chercher d'abord dans la scène active
+            var activeScene = SceneManager.ActiveScene;
+            if (activeScene != null)
+            {
+                var obj = activeScene.FindGameObjectByName(name);
+                if (obj != null)
+                    return obj;
+            }
+            
+            // Sinon chercher dans tous les objets (y compris les persistants)
             return _gameObjects.FirstOrDefault(go => go.Name == name && !go.IsDestroyed);
         }
         
@@ -159,22 +177,33 @@ namespace Potato.Core
         /// </summary>
         public static IEnumerable<GameObject> FindGameObjectsWithTag(string tag)
         {
+            // Chercher d'abord dans la scène active
+            var activeScene = SceneManager.ActiveScene;
+            if (activeScene != null)
+            {
+                var objs = activeScene.FindGameObjectsWithTag(tag);
+                if (objs.Count > 0)
+                    return objs;
+            }
+            
+            // Sinon chercher dans tous les objets (y compris les persistants)
             return _gameObjects.Where(go => go.Tag == tag && !go.IsDestroyed);
         }
         
         /// <summary>
-        /// Détruit tous les GameObjects
+        /// Détruit tous les GameObjects non-persistants
         /// </summary>
-        public static void DestroyAll()
+        public static void DestroyAll(bool includePersistent = false)
         {
             foreach (var gameObject in _gameObjects.ToList())
             {
-                gameObject.Destroy();
+                if (includePersistent || !Scene.IsPersistent(gameObject))
+                {
+                    gameObject.Destroy();
+                }
             }
             
-            _gameObjects.Clear();
-            _pendingAddition.Clear();
-            _pendingRemoval.Clear();
+            ProcessPendingLists();
         }
         
         /// <summary>

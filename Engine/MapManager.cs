@@ -1,6 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Potato;  // Ajout de l'espace de noms principal
+using Potato;
 using Potato.Core;
 using Potato.Core.Entities;
 using Potato.Core.Logging;
@@ -11,14 +11,20 @@ namespace Potato.Engine
 {
     /// <summary>
     /// Gère la génération et le rendu de la carte du jeu.
+    /// Cette classe est maintenant un GameBehaviour, ce qui signifie qu'elle doit être attachée à un GameObject
+    /// et être initialisée par les scènes.
     /// </summary>
-    public class MapManager : Singleton<MapManager>
+    public class MapManager : GameBehaviour
     {
         // Propriétés de la carte
         public int MapWidth { get; private set; }
         public int MapHeight { get; private set; }
         public Rectangle Bounds { get; private set; }
-
+        
+        // Instance statique pour la transition
+        private static MapManager _instance;
+        public static MapManager Instance => _instance;
+        
         // Gestion des obstacles et des éléments de décor
         private List<Rectangle> _obstacles;
         private List<Rectangle> _decorations;
@@ -45,25 +51,74 @@ namespace Potato.Engine
         private int _gridCellSize = 64;
         
         // Générateur de nombres aléatoires
-        private Random _random;
+        private readonly Random _random;
 
         public MapManager()
         {
-            _game = GameManager.Instance;
             _obstacles = new List<Rectangle>();
             _decorations = new List<Rectangle>();
             _safeZones = new List<Rectangle>();
             _dangerZones = new List<Rectangle>();
             _random = new Random();
+            
+            // Conserver une référence à l'instance pour la transition
+            _instance = this;
+            
+            Logger.Instance.Info("MapManager instance créée - En attente d'initialisation", LogCategory.Gameplay);
+        }
+        
+        /// <summary>
+        /// Appelé lorsque le GameObject est activé
+        /// </summary>
+        public override void OnEnable()
+        {
+            base.OnEnable();
+            
+            // Initialiser les ressources lors de l'activation
+            InitializeResources();
+            Logger.Instance.Info("MapManager activé", LogCategory.Gameplay);
+        }
+        
+        /// <summary>
+        /// Appelé lorsque le GameObject est désactivé
+        /// </summary>
+        public override void OnDisable()
+        {
+            base.OnDisable();
+            
+            // Nettoyer les ressources
+            Cleanup();
+            Logger.Instance.Info("MapManager désactivé", LogCategory.Gameplay);
+        }
+        
+        /// <summary>
+        /// Nettoie les ressources du MapManager
+        /// </summary>
+        private void Cleanup()
+        {
+            if (_groundTexture != null)
+            {
+                _groundTexture.Dispose();
+                _groundTexture = null;
+            }
+            
+            if (_pixelTexture != null)
+            {
+                _pixelTexture.Dispose();
+                _pixelTexture = null;
+            }
+            
+            _obstacles.Clear();
+            _decorations.Clear();
+            _safeZones.Clear();
+            _dangerZones.Clear();
         }
 
         /// <summary>
-        /// Initialise le gestionnaire de carte avec les références requises.
+        /// Initialise les ressources du MapManager
         /// </summary>
-        public override void Awake()
+        private void InitializeResources()
         {
-            base.Awake();
-
             // Définir les dimensions de la carte basées sur la fenêtre de jeu
             UpdateMapDimensions();
 
@@ -78,69 +133,52 @@ namespace Potato.Engine
         }
 
         /// <summary>
-        /// Crée une texture de sol procédurale
+        /// Crée une texture de sol simple pour la carte
         /// </summary>
         private void CreateGroundTexture()
         {
-            try
+            // Définir la taille de la texture de base
+            int textureSize = 128;
+            
+            // Créer une nouvelle texture
+            _groundTexture = new Texture2D(GameManager.Instance.GraphicsDevice, textureSize, textureSize);
+            
+            // Préparer les données de couleurs pour la texture
+            Color[] colorData = new Color[textureSize * textureSize];
+            
+            // Remplir la texture avec un motif de sol simple
+            for (int y = 0; y < textureSize; y++)
             {
-                // Créer une texture pour le sol avec des motifs
-                int textureSize = 256;
-                _groundTexture = new Texture2D(GameManager.Instance.GraphicsDevice, textureSize, textureSize);
-                
-                // Générer une texture de sol plus intéressante
-                Color[] colorData = new Color[textureSize * textureSize];
-                
-                // Définir des couleurs de base pour le sol
-                Color baseGroundColor = new Color(50, 90, 50); // Vert foncé
-                Color variationColor1 = new Color(60, 100, 60); // Vert un peu plus clair
-                Color variationColor2 = new Color(40, 70, 40); // Vert plus foncé
-                
-                // Générer une texture de sol avec des variations aléatoires
-                for (int y = 0; y < textureSize; y++)
+                for (int x = 0; x < textureSize; x++)
                 {
-                    for (int x = 0; x < textureSize; x++)
+                    // Calculer l'index dans le tableau de couleurs
+                    int index = y * textureSize + x;
+                    
+                    // Créer une légère variation de couleur pour un effet de texture
+                    int variation = _random.Next(-10, 10);
+                    Color baseColor = new Color(
+                        MathHelper.Clamp(40 + variation, 20, 60),
+                        MathHelper.Clamp(40 + variation, 20, 60),
+                        MathHelper.Clamp(50 + variation, 30, 70)
+                    );
+                    
+                    // Ajouter un peu de bruit pour rendre la texture plus naturelle
+                    if (_random.Next(100) < 15)
                     {
-                        // Créer un motif de base - ici une simple grille
-                        bool isGridLine = x % 32 == 0 || y % 32 == 0;
-                        
-                        // Ajouter des variations aléatoires
-                        float noiseValue = (float)_random.NextDouble();
-                        
-                        Color pixelColor;
-                        if (isGridLine)
-                        {
-                            // Lignes de grille légèrement plus foncées
-                            pixelColor = new Color(
-                                (int)(baseGroundColor.R * 0.9),
-                                (int)(baseGroundColor.G * 0.9),
-                                (int)(baseGroundColor.B * 0.9));
-                        }
-                        else if (noiseValue < 0.3f)
-                        {
-                            pixelColor = variationColor1;
-                        }
-                        else if (noiseValue > 0.7f)
-                        {
-                            pixelColor = variationColor2;
-                        }
-                        else
-                        {
-                            pixelColor = baseGroundColor;
-                        }
-                        
-                        colorData[y * textureSize + x] = pixelColor;
+                        // Taches plus claires ou plus sombres
+                        baseColor = _random.Next(2) == 0 
+                            ? new Color(60, 60, 70) 
+                            : new Color(30, 30, 40);
                     }
+                    
+                    colorData[index] = baseColor;
                 }
-                
-                _groundTexture.SetData(colorData);
-                Logger.Instance.Info("Texture de sol générée avec succès", LogCategory.Gameplay);
             }
-            catch (Exception ex)
-            {
-                Logger.Instance.Error($"Erreur lors de la création de la texture de sol: {ex.Message}", LogCategory.Gameplay);
-                _groundTexture = null;
-            }
+            
+            // Appliquer les données de couleurs à la texture
+            _groundTexture.SetData(colorData);
+            
+            Logger.Instance.Info("Texture de sol générée avec succès", LogCategory.Gameplay);
         }
 
         /// <summary>
@@ -148,10 +186,10 @@ namespace Potato.Engine
         /// </summary>
         public void UpdateMapDimensions()
         {
-            if (_game != null)
+            if (GameManager.Instance != null)
             {
-                MapWidth = _game.GraphicsDevice.Viewport.Width;
-                MapHeight = _game.GraphicsDevice.Viewport.Height;
+                MapWidth = GameManager.Instance.GraphicsDevice.Viewport.Width;
+                MapHeight = GameManager.Instance.GraphicsDevice.Viewport.Height;
                 Bounds = new Rectangle(0, 0, MapWidth, MapHeight);
                 
                 Logger.Instance.Debug($"Dimensions de la carte mises à jour: {MapWidth}x{MapHeight}", LogCategory.Gameplay);
@@ -163,7 +201,7 @@ namespace Potato.Engine
         /// </summary>
         public void GenerateMap(int obstacleCount = 10, int decorationCount = 15)
         {
-            if (_game == null)
+            if (GameManager.Instance == null)
             {
                 Logger.Instance.Error("Tentative de génération de carte sans initialisation", LogCategory.Gameplay);
                 return;
@@ -372,8 +410,6 @@ namespace Potato.Engine
         /// </summary>
         public override void Update(GameTime gameTime)
         {
-            base.Update(gameTime);
-
             Player player = Player.Local;
 
             if (player == null)
@@ -394,9 +430,11 @@ namespace Potato.Engine
         /// <summary>
         /// Dessine la carte et tous ses éléments.
         /// </summary>
-        public new void Draw(SpriteBatch spriteBatch)
+        public override void Draw(SpriteBatch spriteBatch)
         {
-            if (_game == null)
+            base.Draw(spriteBatch);
+            
+            if (GameManager.Instance == null)
                 return;
 
             // Dessiner le sol texturé
@@ -498,32 +536,10 @@ namespace Potato.Engine
         }
 
         /// <summary>
-        /// Charge des textures personnalisées pour les éléments de la carte.
-        /// </summary>
-        public void LoadCustomTextures()
-        {
-            // Si les textures sont disponibles dans le contenu du jeu, les charger ici
-            try
-            {
-                // Utiliser la propriété Game du Singleton au lieu de _game
-                // _backgroundTexture = Game.Content.Load<Texture2D>("Map/background");
-                // _obstacleTexture = Game.Content.Load<Texture2D>("Map/obstacle");
-                // _decorationTexture = Game.Content.Load<Texture2D>("Map/decoration");
-            }
-            catch (Exception ex)
-            {
-                Logger.Instance.Warning($"Impossible de charger les textures de la carte: {ex.Message}", LogCategory.Gameplay);
-                // Utiliser les rendus par défaut avec _pixelTexture
-            }
-        }
-
-        /// <summary>
         /// Réinitialise complètement la carte.
         /// </summary>
-        public override void Reset()
+        public void Reset()
         {
-            base.Reset();
-
             _obstacles.Clear();
             _decorations.Clear();
             _safeZones.Clear();

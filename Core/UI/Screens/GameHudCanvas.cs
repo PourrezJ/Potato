@@ -30,7 +30,7 @@ namespace Potato.Core.UI.Screens
         public override void Awake()
         {
             base.Awake();
-            //CreateUI();
+            CreateUI();
         }
 
         private void CreateUI()

@@ -393,26 +393,26 @@ namespace Potato.Core.UI
             if (needHorizontalScrollBar)
             {
                 // Draw scrollbar track
-                spriteBatch.Draw(UIManager.Instance.Pixel, _horizontalScrollBarRect, _scrollBarColor);
+                spriteBatch.Draw(UIManager.Pixel, _horizontalScrollBarRect, _scrollBarColor);
                 
                 // Draw handle
                 Color handleColor = _isDragging && _dragStartPosition.Y == 0 ?
                     _scrollHandleDragColor : _scrollHandleColor;
                 
-                spriteBatch.Draw(UIManager.Instance.Pixel, _horizontalHandleRect, handleColor);
+                spriteBatch.Draw(UIManager.Pixel, _horizontalHandleRect, handleColor);
             }
             
             // Draw vertical scrollbar if needed
             if (needVerticalScrollBar)
             {
                 // Draw scrollbar track
-                spriteBatch.Draw(UIManager.Instance.Pixel, _verticalScrollBarRect, _scrollBarColor);
+                spriteBatch.Draw(UIManager.Pixel, _verticalScrollBarRect, _scrollBarColor);
                 
                 // Draw handle
                 Color handleColor = _isDragging && _dragStartPosition.X == 0 ?
                     _scrollHandleDragColor : _scrollHandleColor;
                 
-                spriteBatch.Draw(UIManager.Instance.Pixel, _verticalHandleRect, handleColor);
+                spriteBatch.Draw(UIManager.Pixel, _verticalHandleRect, handleColor);
             }
             
             // Draw corner square if both scrollbars are visible
@@ -424,7 +424,7 @@ namespace Potato.Core.UI
                     _scrollBarSize,
                     _scrollBarSize);
                     
-                spriteBatch.Draw(UIManager.Instance.Pixel, cornerRect, _scrollBarColor);
+                spriteBatch.Draw(UIManager.Pixel, cornerRect, _scrollBarColor);
             }
         }
         
@@ -433,7 +433,7 @@ namespace Potato.Core.UI
         {
             if (radius <= 0)
             {
-                spriteBatch.Draw(UIManager.Instance.Pixel, rectangle, color);
+                spriteBatch.Draw(UIManager.Pixel, rectangle, color);
                 return;
             }
 
@@ -445,7 +445,7 @@ namespace Potato.Core.UI
                 rectangle.Width - (int)(radius * 2),
                 rectangle.Height - (int)(radius * 2)
             );
-            spriteBatch.Draw(UIManager.Instance.Pixel, centerRect, color);
+            spriteBatch.Draw(UIManager.Pixel, centerRect, color);
 
             Rectangle topRect = new Rectangle(
                 rectangle.X + (int)radius,
@@ -453,7 +453,7 @@ namespace Potato.Core.UI
                 rectangle.Width - (int)(radius * 2),
                 (int)radius
             );
-            spriteBatch.Draw(UIManager.Instance.Pixel, topRect, color);
+            spriteBatch.Draw(UIManager.Pixel, topRect, color);
 
             Rectangle bottomRect = new Rectangle(
                 rectangle.X + (int)radius,
@@ -461,7 +461,7 @@ namespace Potato.Core.UI
                 rectangle.Width - (int)(radius * 2),
                 (int)radius
             );
-            spriteBatch.Draw(UIManager.Instance.Pixel, bottomRect, color);
+            spriteBatch.Draw(UIManager.Pixel, bottomRect, color);
 
             Rectangle leftRect = new Rectangle(
                 rectangle.X,
@@ -469,7 +469,7 @@ namespace Potato.Core.UI
                 (int)radius,
                 rectangle.Height - (int)(radius * 2)
             );
-            spriteBatch.Draw(UIManager.Instance.Pixel, leftRect, color);
+            spriteBatch.Draw(UIManager.Pixel, leftRect, color);
 
             Rectangle rightRect = new Rectangle(
                 rectangle.X + rectangle.Width - (int)radius,
@@ -477,7 +477,7 @@ namespace Potato.Core.UI
                 (int)radius,
                 rectangle.Height - (int)(radius * 2)
             );
-            spriteBatch.Draw(UIManager.Instance.Pixel, rightRect, color);
+            spriteBatch.Draw(UIManager.Pixel, rightRect, color);
         }
         
         // Add a child element

@@ -6,7 +6,8 @@ using System;
 namespace Potato.Core
 {
     /// <summary>
-    /// Classe de base inspirée du MonoBehaviour de Unity, implémentant un cycle de vie similaire
+    /// Classe de base inspirée du MonoBehaviour de Unity, implémentant un cycle de vie similaire.
+    /// Un GameBehaviour doit toujours être attaché à un GameObject.
     /// </summary>
     public abstract class GameBehaviour
     {
@@ -17,6 +18,29 @@ namespace Potato.Core
         
         // Propriété de priorité pour contrôler l'ordre d'exécution
         private int _executionOrder = 0;
+        
+        // Référence au GameObject parent de ce comportement
+        private GameObject _gameObject;
+        
+        /// <summary>
+        /// Le GameObject auquel ce comportement est attaché. Ne peut jamais être null.
+        /// </summary>
+        public GameObject GameObject 
+        {
+            get => _gameObject;
+            internal set
+            {
+                if (value == null)
+                    throw new ArgumentNullException(nameof(value), "Un GameBehaviour doit être attaché à un GameObject");
+                
+                _gameObject = value;
+            }
+        }
+        
+        /// <summary>
+        /// Transform du GameObject auquel ce comportement est attaché. Raccourci pour GameObject.Transform.
+        /// </summary>
+        public Transform Transform => GameObject?.Transform;
         
         /// <summary>
         /// Priorité d'exécution du comportement. Les valeurs plus basses sont exécutées en premier.
@@ -37,6 +61,15 @@ namespace Potato.Core
         }
         
         public bool IsActive => _isActive;
+        
+        /// <summary>
+        /// Constructeur protégé pour empêcher l'instanciation directe.
+        /// Les GameBehaviours doivent être créés via GameObject.AddComponent<T>().
+        /// </summary>
+        protected GameBehaviour()
+        {
+            _game = GameManager.Instance;
+        }
         
         /// <summary>
         /// Appelé une seule fois lors de l'initialisation

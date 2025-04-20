@@ -9,7 +9,7 @@ namespace Potato.Core
 {
     /// <summary>
     /// Représente un objet de jeu similaire à GameObject d'Unity.
-    /// Sert de conteneur pour les composants et gère le cycle de vie de l'objet.
+    /// Sert de conteneur pour les composants et comportements, et gère le cycle de vie de l'objet.
     /// </summary>
     public class GameObject
     {
@@ -29,8 +29,30 @@ namespace Potato.Core
         // Tag pour le filtrage
         public string Tag { get; set; } = "Untagged";
         
+        // Référence à la scène à laquelle appartient cet objet
+        private Scene _scene;
+        public Scene Scene
+        {
+            get => _scene;
+            internal set
+            {
+                if (_scene != value)
+                {
+                    // Désenregistrer de l'ancienne scène
+                    _scene?.UnregisterGameObject(this);
+                    
+                    // Enregistrer dans la nouvelle scène
+                    _scene = value;
+                    _scene?.RegisterGameObject(this);
+                }
+            }
+        }
+        
         // Liste des composants attachés
         private readonly List<Component> _components = new List<Component>();
+        
+        // Liste des comportements attachés
+        private readonly List<GameBehaviour> _behaviours = new List<GameBehaviour>();
         
         // Référence au GameManager
         protected GameManager _game;
@@ -39,7 +61,7 @@ namespace Potato.Core
 
         #region Constructors
 
-        public GameObject(string name = "GameObject")
+        public GameObject(string name = "GameObject", Scene scene = null)
         {
             Id = Guid.NewGuid();
             Name = name;
@@ -47,6 +69,9 @@ namespace Potato.Core
             
             // Tout GameObject a automatiquement un Transform
             Transform = AddComponent<Transform>();
+            
+            // Associer à la scène spécifiée ou à la scène active
+            Scene = scene ?? SceneManager.ActiveScene;
             
             // Enregistrer ce GameObject dans le gestionnaire
             GameObjectManager.RegisterGameObject(this);
@@ -104,7 +129,7 @@ namespace Potato.Core
         {
             if (component is Transform)
             {
-                Logger.Instance.Warning("Cannot remove Transform component from GameObject", LogCategory.Core);
+                Logger.Instance.Warning("Impossible de supprimer le composant Transform d'un GameObject", LogCategory.Core);
                 return;
             }
             
@@ -113,6 +138,68 @@ namespace Potato.Core
                 component.OnDisable();
                 component.OnDestroy();
                 _components.Remove(component);
+            }
+        }
+
+        #endregion
+
+        #region Behaviour Management
+
+        /// <summary>
+        /// Ajoute un comportement du type spécifié au GameObject
+        /// </summary>
+        public T AddBehaviour<T>() where T : GameBehaviour, new()
+        {
+            // Créer une nouvelle instance du comportement
+            T behaviour = new T();
+            
+            // Initialiser le comportement
+            behaviour.GameObject = this;
+            
+            // Ajouter le comportement à la liste
+            _behaviours.Add(behaviour);
+            
+            // Enregistrer le comportement dans le BehaviourManager
+            BehaviourManager.RegisterBehaviour(behaviour);
+            
+            // Réveiller le comportement
+            if (IsActive && !IsDestroyed)
+            {
+                behaviour.Enable();
+            }
+            
+            return behaviour;
+        }
+        
+        /// <summary>
+        /// Obtient le premier comportement du type spécifié attaché à ce GameObject
+        /// </summary>
+        public T GetBehaviour<T>() where T : GameBehaviour
+        {
+            return _behaviours.OfType<T>().FirstOrDefault();
+        }
+        
+        /// <summary>
+        /// Obtient tous les comportements du type spécifié attachés à ce GameObject
+        /// </summary>
+        public IEnumerable<T> GetBehaviours<T>() where T : GameBehaviour
+        {
+            return _behaviours.OfType<T>();
+        }
+        
+        /// <summary>
+        /// Supprime un comportement du GameObject
+        /// </summary>
+        public void RemoveBehaviour<T>(T behaviour) where T : GameBehaviour
+        {
+            if (_behaviours.Contains(behaviour))
+            {
+                behaviour.Disable();
+                behaviour.Destroy();
+                _behaviours.Remove(behaviour);
+                
+                // Désenregistrer le comportement du BehaviourManager
+                BehaviourManager.UnregisterBehaviour(behaviour);
             }
         }
 
@@ -143,6 +230,12 @@ namespace Potato.Core
                         component.Start();
                     }
                 }
+                
+                // Activer tous les comportements
+                foreach (var behaviour in _behaviours)
+                {
+                    behaviour.Enable();
+                }
             }
             else
             {
@@ -150,6 +243,12 @@ namespace Potato.Core
                 foreach (var component in _components)
                 {
                     component.OnDisable();
+                }
+                
+                // Désactiver tous les comportements
+                foreach (var behaviour in _behaviours)
+                {
+                    behaviour.Disable();
                 }
             }
         }
@@ -174,8 +273,32 @@ namespace Potato.Core
                 component.OnDestroy();
             }
             
+            // Désactiver et détruire tous les comportements
+            foreach (var behaviour in _behaviours)
+            {
+                if (behaviour.IsActive)
+                {
+                    behaviour.Disable();
+                }
+                behaviour.Destroy();
+                
+                // Désenregistrer le comportement du BehaviourManager
+                BehaviourManager.UnregisterBehaviour(behaviour);
+            }
+            
+            // Supprimer ce GameObject de sa scène
+            Scene?.UnregisterGameObject(this);
+            
             // Supprimer ce GameObject du gestionnaire
             GameObjectManager.UnregisterGameObject(this);
+        }
+        
+        /// <summary>
+        /// Marque cet objet comme persistent à travers les changements de scènes
+        /// </summary>
+        public void DontDestroyOnLoad()
+        {
+            Scene.MarkAsPersistent(this);
         }
         
         /// <summary>
@@ -193,6 +316,9 @@ namespace Potato.Core
                     component.Update(gameTime);
                 }
             }
+            
+            // Note: Les comportements sont mis à jour par le BehaviourManager,
+            // pas par le GameObject directement
         }
         
         /// <summary>
@@ -210,6 +336,9 @@ namespace Potato.Core
                     component.Draw(spriteBatch);
                 }
             }
+            
+            // Note: Les comportements sont dessinés par le BehaviourManager,
+            // pas par le GameObject directement
         }
         
         /// <summary>
@@ -224,6 +353,9 @@ namespace Potato.Core
             {
                 component.Awake();
             }
+            
+            // Note: Les comportements sont réveillés par le BehaviourManager
+            // ou lors de l'ajout à ce GameObject
         }
         
         /// <summary>
@@ -241,6 +373,9 @@ namespace Potato.Core
                     component.Start();
                 }
             }
+            
+            // Note: Les comportements sont démarrés par le BehaviourManager
+            // ou lors de l'ajout à ce GameObject
         }
 
         #endregion

@@ -209,7 +209,7 @@ namespace Potato.Core.UI
         private void DrawButtonBackground(SpriteBatch spriteBatch, Rectangle bounds, Color backgroundColor)
         {
             // S'assurer que UIManager est initialisé avant d'utiliser Pixel
-            if (UIManager.Instance.Pixel == null)
+            if (UIManager.Pixel == null)
                 return;
             
             // Dessiner la bordure si activée
@@ -336,7 +336,7 @@ namespace Potato.Core.UI
         private void DrawRectangle(SpriteBatch spriteBatch, Rectangle rectangle, Color color, float cornerRadius)
         {
             // Utiliser le pixel du UIManager au lieu d'en créer un nouveau
-            Texture2D pixel = UIManager.Instance.Pixel;
+            Texture2D pixel = UIManager.Pixel;
             
             if (cornerRadius <= 0 || pixel == null)
             {

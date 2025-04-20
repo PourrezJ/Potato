@@ -124,7 +124,7 @@ namespace Potato.Core.UI
             // Implementation identical to other UI components
             if (radius <= 0)
             {
-                spriteBatch.Draw(UIManager.Instance.Pixel, rectangle, color);
+                spriteBatch.Draw(UIManager.Pixel, rectangle, color);
                 return;
             }
 
@@ -136,7 +136,7 @@ namespace Potato.Core.UI
                 rectangle.Width - (int)(radius * 2),
                 rectangle.Height - (int)(radius * 2)
             );
-            spriteBatch.Draw(UIManager.Instance.Pixel, centerRect, color);
+            spriteBatch.Draw(UIManager.Pixel, centerRect, color);
 
             Rectangle topRect = new Rectangle(
                 rectangle.X + (int)radius,
@@ -144,7 +144,7 @@ namespace Potato.Core.UI
                 rectangle.Width - (int)(radius * 2),
                 (int)radius
             );
-            spriteBatch.Draw(UIManager.Instance.Pixel, topRect, color);
+            spriteBatch.Draw(UIManager.Pixel, topRect, color);
 
             Rectangle bottomRect = new Rectangle(
                 rectangle.X + (int)radius,
@@ -152,7 +152,7 @@ namespace Potato.Core.UI
                 rectangle.Width - (int)(radius * 2),
                 (int)radius
             );
-            spriteBatch.Draw(UIManager.Instance.Pixel, bottomRect, color);
+            spriteBatch.Draw(UIManager.Pixel, bottomRect, color);
 
             Rectangle leftRect = new Rectangle(
                 rectangle.X,
@@ -160,7 +160,7 @@ namespace Potato.Core.UI
                 (int)radius,
                 rectangle.Height - (int)(radius * 2)
             );
-            spriteBatch.Draw(UIManager.Instance.Pixel, leftRect, color);
+            spriteBatch.Draw(UIManager.Pixel, leftRect, color);
 
             Rectangle rightRect = new Rectangle(
                 rectangle.X + rectangle.Width - (int)radius,
@@ -168,7 +168,7 @@ namespace Potato.Core.UI
                 (int)radius,
                 rectangle.Height - (int)(radius * 2)
             );
-            spriteBatch.Draw(UIManager.Instance.Pixel, rightRect, color);
+            spriteBatch.Draw(UIManager.Pixel, rightRect, color);
         }
         
         // Public properties

@@ -8,6 +8,7 @@ using Potato.Core;
 using Potato.Core.Entities;
 using Potato.Core.Enemies;
 using Potato.Core.Weapons;
+using Potato.Core.Scenes;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -131,10 +132,6 @@ public class GameManager : Game
     {
         Logger.Instance.Info("BehaviourManager initialisé", LogCategory.Core);
         
-        // Initialiser le GameObjectManager
-        GameObjectManager.Initialize();
-        Logger.Instance.Info("GameObjectManager initialisé", LogCategory.Core);
-        
         base.Initialize();
     }
 
@@ -154,13 +151,23 @@ public class GameManager : Game
                 BehaviourManager.DiscoverBehaviours();
                 Logger.Instance.Info("Behaviors discovery completed");
 
+                // Initialiser le GameObjectManager
+                GameObjectManager.Initialize();
+                Logger.Instance.Info("GameObjectManager initialisé", LogCategory.Core);
+                
+                // Initialiser le SceneManager
+                SceneManager.Initialize();
+                Logger.Instance.Info("SceneManager initialisé", LogCategory.Core);
+
                 // Initialiser les gestionnaires de jeu
                 _waveManager = WaveManager.Instance;
                 _mapManager = MapManager.Instance;
                 _waveManager.OnWaveCompleted += OnWaveCompletedHandler;
 
-                MainMenuCanvas.Instance.CreateUI();
+                // Créer et enregistrer les scènes principales du jeu
+                CreateAndRegisterScenes();
 
+                MainMenuCanvas.Instance.CreateUI();
             }
             catch (Exception discoverEx) 
             {
@@ -175,18 +182,40 @@ public class GameManager : Game
             _font = null;
         }       
     }
+    
+    /// <summary>
+    /// Crée et enregistre les scènes principales du jeu
+    /// </summary>
+    private void CreateAndRegisterScenes()
+    {
+        // Créer les scènes principales avec les classes spécifiques
+        var mainMenuScene = new MainMenuScene();
+        var characterSelectionScene = new CharacterSelectionScene();
+        var gameplayScene = new GameplayScene();
+        var shopScene = new ShopScene();
+        
+        // Enregistrer les scènes dans le SceneManager
+        SceneManager.RegisterScene(mainMenuScene);
+        SceneManager.RegisterScene(characterSelectionScene);
+        SceneManager.RegisterScene(gameplayScene);
+        SceneManager.RegisterScene(shopScene);
+        
+        // Charger initialement la scène du menu principal
+        SceneManager.LoadScene("MainMenu", 0f); // Transition immédiate
+        
+        Logger.Instance.Info("Scènes créées et enregistrées avec succès", LogCategory.Core);
+    }
 
     protected override void Update(GameTime gameTime)
-    {        
-        // Mettre à jour tous les GameBehaviours via le BehaviourManager
-        BehaviourManager.Update(gameTime);
-        
+    {                
         // Mettre à jour tous les GameObjects via le GameObjectManager
         GameObjectManager.Update(gameTime);
 
-        // Update UIManager in all states
-        UIManager.Instance.Update(gameTime);
-        
+        // Mettre à jour tous les GameBehaviours via le BehaviourManager
+        BehaviourManager.Update(gameTime);
+
+        UIManager.Update(gameTime);
+     
         // Gestion spécifique en fonction de l'état du jeu
         switch (_currentGameState)
         {
@@ -255,6 +284,23 @@ public class GameManager : Game
         
         Logger.Instance.Info($"Game state changed from {previousState} to: {_currentGameState}", LogCategory.Gameplay);
         
+        // Changer également la scène en fonction de l'état du jeu
+        switch (_currentGameState)
+        {
+            case GameState.MainMenu:
+                SceneManager.LoadScene("MainMenu", 0.3f);
+                break;
+            case GameState.CharacterSelection:
+                SceneManager.LoadScene("CharacterSelection", 0.3f);
+                break;
+            case GameState.Playing:
+                SceneManager.LoadScene("Gameplay", 0.3f);
+                break;
+            case GameState.Shopping:
+                SceneManager.LoadScene("Shop", 0.3f);
+                break;
+        }
+        
         // Note: la gestion des canvas se fait maintenant manuellement
     }
     
@@ -272,9 +318,9 @@ public class GameManager : Game
     /// </summary>
     public void StartGame()
     {
-        // Générer d'abord une nouvelle carte pour la partie
-        _mapManager.GenerateMap();
-        Logger.Instance.Info("Nouvelle carte générée pour la partie", LogCategory.Gameplay);
+        // Nous n'avons plus besoin de générer la carte ici
+        // car cela sera géré par le MapManager lorsqu'il sera activé par la GameplayScene
+        // La méthode GenerateMap sera appelée plus bas
         
         // Initialize player and weapon
         _selectedPlayer.Initialize();
@@ -290,13 +336,20 @@ public class GameManager : Game
         _selectedWeapon.Initialize();
         Player.AddWeapon(_selectedWeapon);
         
+        // Nous n'avons plus besoin d'activer explicitement le WaveManager ici
+        // car cela est maintenant géré par la GameplayScene
+        
+        // Générer une nouvelle carte pour la partie avant de démarrer la vague
+        // Cela sera fait quand le MapManager sera activé, mais on prépare déjà la carte
+        _mapManager.GenerateMap();
+        
         // Start wave 1
         StartWave(1);
         
         // Flag game as started
         _gameStarted = true;
         
-        // Set state to playing
+        // Set state to playing - cela va charger la scène GameplayScene
         SetGameState(GameState.Playing);
     }
     
@@ -599,6 +652,7 @@ public class GameManager : Game
         
         // Réinitialiser les managers dépendants
         _waveManager.Reset();
+        _waveManager.Deactivate(); // Désactiver le WaveManager pour qu'il n'essaie pas de générer des ennemis
         _mapManager.Reset();
         
         // Réinitialiser l'état du jeu

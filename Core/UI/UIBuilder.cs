@@ -98,10 +98,10 @@ namespace Potato.Core.UI
         /// </summary>
         public static UICanvas GetOrCreateCanvas(string name)
         {
-            var canvas = UIManager.Instance.GetCanvas(name);
+            var canvas = UIManager.GetCanvas(name);
             if (canvas == null)
             {
-                canvas = UIManager.Instance.CreateCanvas(name);
+                canvas = UIManager.CreateCanvas(name);
             }
             
             return canvas;

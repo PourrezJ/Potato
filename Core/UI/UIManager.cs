@@ -4,12 +4,10 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Potato.Core.Logging;
-using Potato.Core.Attributes;
 
 namespace Potato.Core.UI
 {
-    [ExecutionOrder(ExecutionOrderAttribute.EarlyPriority)]
-    public class UIManager : Singleton<UIManager>
+    public static class UIManager
     {
         public static SpriteFont DefaultFont {
             get
@@ -25,27 +23,21 @@ namespace Potato.Core.UI
         private static SpriteFont _defaultFont;
 
         // Liste des canvas au lieu d'une liste simple d'éléments
-        private List<UICanvas> _canvases = new List<UICanvas>();
-        private Dictionary<string, UICanvas> _canvasByName = new Dictionary<string, UICanvas>();
+        private static List<UICanvas> _canvases = new List<UICanvas>();
+        private static Dictionary<string, UICanvas> _canvasByName = new Dictionary<string, UICanvas>();
         
-        private Texture2D _pixel;
-        private MouseState _previousMouseState;
-        private UIElement _hoveredElement;
-        private UIElement _pressedElement;
-        
-        // Élément actuellement focalisé (pour la navigation au clavier)
-        private UIElement _focusedElement;
+        private static Texture2D _pixel;
+        private static MouseState _previousMouseState;
+        private static UIElement _hoveredElement;
+        private static UIElement _pressedElement;
 
-        public UIManager() { }
 
-        public override void Awake()
+        public static void Initialize()
         {
-            base.Awake();
-
             try 
             {
-                // Créer une texture pixel blanc pour les dessins primitifs
-                _pixel = new Texture2D(_game.GraphicsDevice, 1, 1);
+                // Utiliser directement GameManager.Instance au lieu de _game
+                _pixel = new Texture2D(GameManager.Instance.GraphicsDevice, 1, 1);
                 _pixel.SetData(new[] { Color.White });
                 
                 Logger.Instance.Info("UIManager initialisé avec succès", LogCategory.UI);
@@ -58,7 +50,7 @@ namespace Potato.Core.UI
 
         #region Canvas Management
         
-        public void RegisterCanvas(UICanvas canvas)
+        public static void RegisterCanvas(UICanvas canvas)
         {
             if (!_canvases.Contains(canvas))
             {
@@ -71,7 +63,7 @@ namespace Potato.Core.UI
             }
         }
         
-        public void UnregisterCanvas(UICanvas canvas)
+        public static void UnregisterCanvas(UICanvas canvas)
         {
             if (_canvases.Contains(canvas))
             {
@@ -84,7 +76,7 @@ namespace Potato.Core.UI
             }
         }
         
-        public UICanvas GetCanvas(string name)
+        public static UICanvas GetCanvas(string name)
         {
             if (_canvasByName.TryGetValue(name, out var canvas))
                 return canvas;
@@ -92,7 +84,7 @@ namespace Potato.Core.UI
             return null;
         }
         
-        public UICanvas CreateCanvas(string name)
+        public static UICanvas CreateCanvas(string name)
         {
             if (_canvasByName.ContainsKey(name))
             {
@@ -106,7 +98,7 @@ namespace Potato.Core.UI
             return canvas;
         }
         
-        public void ShowCanvas(string name)
+        public static void ShowCanvas(string name)
         {
             var canvas = GetCanvas(name);
             if (canvas != null)
@@ -116,7 +108,7 @@ namespace Potato.Core.UI
             }
         }
         
-        public void HideCanvas(string name)
+        public static void HideCanvas(string name)
         {
             var canvas = GetCanvas(name);
             if (canvas != null)
@@ -126,7 +118,7 @@ namespace Potato.Core.UI
             }
         }
         
-        public void HideAllCanvas()
+        public static void HideAllCanvas()
         {
             foreach (var canvas in _canvases)
             {
@@ -137,7 +129,7 @@ namespace Potato.Core.UI
         
         #endregion
 
-        public override void Update(GameTime gameTime)
+        public static void Update(GameTime gameTime)
         {
             // Obtenir l'état actuel de la souris
             var currentMouseState = Mouse.GetState();
@@ -224,7 +216,7 @@ namespace Potato.Core.UI
         /// </summary>
         /// <param name="position">Position à tester (coordonnées écran)</param>
         /// <returns>L'élément UI sous la position, ou null si aucun</returns>
-        private UIElement RaycastUI(Point position)
+        private static UIElement RaycastUI(Point position)
         {
             // Vérification de sécurité - si la liste d'éléments est null ou vide, retourner null
             if (_canvases == null || _canvases.Count == 0)
@@ -277,7 +269,7 @@ namespace Potato.Core.UI
         /// <summary>
         /// Recherche récursivement l'élément enfant le plus profond sous la position spécifiée
         /// </summary>
-        private UIElement RaycastUIElement(UIElement parent, Point screenPosition)
+        private static UIElement RaycastUIElement(UIElement parent, Point screenPosition)
         {
             // Vérification de nullité pour éviter les NullReferenceException
             if (parent == null)
@@ -319,10 +311,8 @@ namespace Potato.Core.UI
             return null; // Aucun enfant touché
         }
 
-        public override void Draw(SpriteBatch spriteBatch)
+        public static void Draw(SpriteBatch spriteBatch)
         {
-            base.Draw(spriteBatch);
-
             // Remarque: Nous ne démarrons pas un spriteBatch ici car chaque canvas 
             // gère désormais ses propres appels à Begin/End
             foreach (var canvas in _canvases)
@@ -335,7 +325,7 @@ namespace Potato.Core.UI
         }
 
         // Propriété Pixel sécurisée
-        public Texture2D Pixel 
+        public static Texture2D Pixel 
         { 
             get 
             {
@@ -361,7 +351,7 @@ namespace Potato.Core.UI
             }
         }
 
-        public void Dispose()
+        public static void Dispose()
         {
             _pixel?.Dispose();
         }
