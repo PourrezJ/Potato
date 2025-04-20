@@ -1,10 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Collections.Generic;
 using Potato.Core.Entities;
 using Potato.Engine;
-using Potato.Core.Enemies;
 
 namespace Potato.Core.Weapons
 {

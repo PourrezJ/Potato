@@ -129,13 +129,13 @@ public class GameManager : Game
 
     protected override void Initialize()
     {
-
         Logger.Instance.Info("BehaviourManager initialisé", LogCategory.Core);
         
-
+        // Initialiser le GameObjectManager
+        GameObjectManager.Initialize();
+        Logger.Instance.Info("GameObjectManager initialisé", LogCategory.Core);
         
         base.Initialize();
-
     }
 
     protected override void LoadContent()
@@ -180,6 +180,9 @@ public class GameManager : Game
     {        
         // Mettre à jour tous les GameBehaviours via le BehaviourManager
         BehaviourManager.Update(gameTime);
+        
+        // Mettre à jour tous les GameObjects via le GameObjectManager
+        GameObjectManager.Update(gameTime);
 
         // Update UIManager in all states
         UIManager.Instance.Update(gameTime);
@@ -212,6 +215,9 @@ public class GameManager : Game
 
         // Start sprite batch
         _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+        
+        // Dessiner tous les GameObjects via le GameObjectManager
+        GameObjectManager.Draw(_spriteBatch);
         
         // Draw game elements first (background, map, etc.)
         if (_currentGameState == GameState.Playing || 
