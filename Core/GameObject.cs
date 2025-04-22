@@ -48,6 +48,38 @@ namespace Potato.Core
             }
         }
         
+        // Hiérarchie parent-enfant
+        private GameObject _parent;
+        public GameObject Parent
+        {
+            get => _parent;
+            set
+            {
+                if (_parent == value)
+                    return;
+                    
+                // Se détacher de l'ancien parent
+                if (_parent != null)
+                {
+                    _parent._children.Remove(this);
+                }
+                
+                _parent = value;
+                
+                // S'attacher au nouveau parent
+                if (_parent != null)
+                {
+                    _parent._children.Add(this);
+                    // Mettre à jour la transformation pour refléter le nouveau parent
+                    Transform.UpdateFromParent();
+                }
+            }
+        }
+        
+        // Liste des enfants
+        private readonly List<GameObject> _children = new List<GameObject>();
+        public IReadOnlyList<GameObject> Children => _children.AsReadOnly();
+        
         // Liste des composants attachés
         private readonly List<Component> _components = new List<Component>();
         
@@ -205,6 +237,81 @@ namespace Potato.Core
 
         #endregion
 
+        #region Hierarchy Management
+        
+        /// <summary>
+        /// Ajoute un enfant à ce GameObject
+        /// </summary>
+        public void AddChild(GameObject child)
+        {
+            if (child == null)
+                return;
+                
+            child.Parent = this;
+        }
+        
+        /// <summary>
+        /// Supprime un enfant de ce GameObject
+        /// </summary>
+        public void RemoveChild(GameObject child)
+        {
+            if (child == null || child.Parent != this)
+                return;
+                
+            child.Parent = null;
+        }
+        
+        /// <summary>
+        /// Trouve un enfant par son nom
+        /// </summary>
+        public GameObject FindChild(string name)
+        {
+            return _children.FirstOrDefault(child => child.Name == name);
+        }
+        
+        /// <summary>
+        /// Recherche récursivement un GameObject par son nom dans toute la hiérarchie d'enfants
+        /// </summary>
+        public GameObject FindInChildren(string name)
+        {
+            // Recherche directe dans les enfants
+            GameObject directChild = FindChild(name);
+            if (directChild != null)
+                return directChild;
+                
+            // Recherche récursive dans les enfants des enfants
+            foreach (var child in _children)
+            {
+                GameObject found = child.FindInChildren(name);
+                if (found != null)
+                    return found;
+            }
+            
+            return null;
+        }
+        
+        /// <summary>
+        /// Vérifie si cet objet est un descendant d'un autre GameObject
+        /// </summary>
+        public bool IsChildOf(GameObject potentialParent)
+        {
+            if (potentialParent == null)
+                return false;
+                
+            GameObject current = Parent;
+            while (current != null)
+            {
+                if (current == potentialParent)
+                    return true;
+                    
+                current = current.Parent;
+            }
+            
+            return false;
+        }
+        
+        #endregion
+
         #region Lifecycle Management
 
         /// <summary>
@@ -225,7 +332,7 @@ namespace Potato.Core
                     component.OnEnable();
                     
                     // Si Start n'a pas encore été appelé, l'appeler maintenant
-                    if (!component.HasStarted && component.IsEnabled)
+                    if (!component.HasStarted && component.Enabled)
                     {
                         component.Start();
                     }
@@ -235,6 +342,18 @@ namespace Potato.Core
                 foreach (var behaviour in _behaviours)
                 {
                     behaviour.Enable();
+                }
+                
+                // Propager aux enfants seulement si le parent est actif
+                foreach (var child in _children)
+                {
+                    // Restaurer l'état précédent de l'enfant - si l'enfant était actif avant
+                    // que le parent ne soit désactivé, il devrait être réactivé
+                    if (child._wasActiveBeforeParentDeactivated)
+                    {
+                        child.SetActive(true);
+                        child._wasActiveBeforeParentDeactivated = false;
+                    }
                 }
             }
             else
@@ -250,8 +369,22 @@ namespace Potato.Core
                 {
                     behaviour.Disable();
                 }
+                
+                // Propager aux enfants
+                foreach (var child in _children)
+                {
+                    // Mémoriser l'état de l'enfant avant la désactivation
+                    child._wasActiveBeforeParentDeactivated = child.IsActive;
+                    if (child.IsActive)
+                    {
+                        child.SetActive(false);
+                    }
+                }
             }
         }
+        
+        // Champ pour stocker l'état avant désactivation par le parent
+        private bool _wasActiveBeforeParentDeactivated = false;
         
         /// <summary>
         /// Détruit ce GameObject
@@ -263,10 +396,16 @@ namespace Potato.Core
                 
             IsDestroyed = true;
             
+            // Détruire tous les enfants d'abord
+            foreach (var child in _children.ToList())
+            {
+                child.Destroy();
+            }
+            
             // Désactiver et détruire tous les composants
             foreach (var component in _components)
             {
-                if (component.IsEnabled)
+                if (component.Enabled)
                 {
                     component.OnDisable();
                 }
@@ -286,6 +425,9 @@ namespace Potato.Core
                 BehaviourManager.UnregisterBehaviour(behaviour);
             }
             
+            // Se détacher du parent
+            Parent = null;
+            
             // Supprimer ce GameObject de sa scène
             Scene?.UnregisterGameObject(this);
             
@@ -294,27 +436,26 @@ namespace Potato.Core
         }
         
         /// <summary>
-        /// Marque cet objet comme persistent à travers les changements de scènes
-        /// </summary>
-        public void DontDestroyOnLoad()
-        {
-            Scene.MarkAsPersistent(this);
-        }
-        
-        /// <summary>
-        /// Méthode interne pour mettre à jour tous les composants
+        /// Méthode interne pour mettre à jour tous les composants et les enfants
         /// </summary>
         internal void Update(GameTime gameTime)
         {
             if (!IsActive || IsDestroyed)
                 return;
                 
+            // Mettre à jour tous les composants
             foreach (var component in _components.ToList()) // ToList pour éviter les problèmes de modification pendant l'itération
             {
-                if (component.IsEnabled)
+                if (component.Enabled)
                 {
                     component.Update(gameTime);
                 }
+            }
+            
+            // Mettre à jour tous les enfants
+            foreach (var child in _children.ToList())
+            {
+                child.Update(gameTime);
             }
             
             // Note: Les comportements sont mis à jour par le BehaviourManager,
@@ -322,19 +463,26 @@ namespace Potato.Core
         }
         
         /// <summary>
-        /// Méthode interne pour dessiner tous les composants
+        /// Méthode interne pour dessiner tous les composants et les enfants
         /// </summary>
         internal void Draw(SpriteBatch spriteBatch)
         {
             if (!IsActive || IsDestroyed)
                 return;
                 
+            // Dessiner tous les composants
             foreach (var component in _components.ToList())
             {
-                if (component.IsEnabled)
+                if (component.Enabled)
                 {
                     component.Draw(spriteBatch);
                 }
+            }
+            
+            // Dessiner tous les enfants
+            foreach (var child in _children.ToList())
+            {
+                child.Draw(spriteBatch);
             }
             
             // Note: Les comportements sont dessinés par le BehaviourManager,
@@ -368,7 +516,7 @@ namespace Potato.Core
                 
             foreach (var component in _components)
             {
-                if (component.IsEnabled && !component.HasStarted)
+                if (component.Enabled && !component.HasStarted)
                 {
                     component.Start();
                 }

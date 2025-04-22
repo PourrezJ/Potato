@@ -28,7 +28,6 @@ public class GameManager : Game
 
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
-    private SpriteFont _font;
 
     #endregion
 
@@ -140,46 +139,41 @@ public class GameManager : Game
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         
         try
-        {        
-            // Initialize log viewer
-            _logViewer = new LogViewer(this, _font);
-            Logger.Instance.Info("LogViewer initialized");
+        {             
+            // Initialiser le BehaviourManager
+            //BehaviourManager.DiscoverBehaviours();
+            //Logger.Instance.Info("Behaviors discovery completed");
+
+            // Initialiser le UIManager
+            UIManager.Initialize();
+
+            // // Initialize log viewer
+            // _logViewer = new LogViewer(this);
+            // Logger.Instance.Info("LogViewer initialized");
+
+            // Initialiser le GameObjectManager
+            GameObjectManager.Initialize();
+            Logger.Instance.Info("GameObjectManager initialisé", LogCategory.Core);
             
-            try 
-            {
-                // Initialiser le BehaviourManager
-                BehaviourManager.DiscoverBehaviours();
-                Logger.Instance.Info("Behaviors discovery completed");
+            // Initialiser le SceneManager
+            SceneManager.Initialize();
+            Logger.Instance.Info("SceneManager initialisé", LogCategory.Core);
 
-                // Initialiser le GameObjectManager
-                GameObjectManager.Initialize();
-                Logger.Instance.Info("GameObjectManager initialisé", LogCategory.Core);
-                
-                // Initialiser le SceneManager
-                SceneManager.Initialize();
-                Logger.Instance.Info("SceneManager initialisé", LogCategory.Core);
+            // Initialiser les gestionnaires de jeu
+            // _waveManager = WaveManager.Instance;
+            // _mapManager = MapManager.Instance;
+            // _waveManager.OnWaveCompleted += OnWaveCompletedHandler;
 
-                // Initialiser les gestionnaires de jeu
-                _waveManager = WaveManager.Instance;
-                _mapManager = MapManager.Instance;
-                _waveManager.OnWaveCompleted += OnWaveCompletedHandler;
+            // Créer et enregistrer les scènes principales du jeu
+            CreateAndRegisterScenes();
 
-                // Créer et enregistrer les scènes principales du jeu
-                CreateAndRegisterScenes();
-
-                MainMenuCanvas.Instance.CreateUI();
-            }
-            catch (Exception discoverEx) 
-            {
-                Logger.Instance.Error($"Error during behavior discovery: {discoverEx.Message}");
-            }
-            
+            //MainMenuCanvas.CreateUI();
+                 
             Logger.Instance.Info("All screens initialized");
         }
         catch (Exception ex)
         {
-            Logger.Instance.Error($"Error loading DefaultFont: {ex.Message}");
-            _font = null;
+            Logger.Instance.Error($"Error during content loading: {ex.Message}", LogCategory.Core);
         }       
     }
     
@@ -190,16 +184,18 @@ public class GameManager : Game
     {
         // Créer les scènes principales avec les classes spécifiques
         var mainMenuScene = new MainMenuScene();
+        /*
         var characterSelectionScene = new CharacterSelectionScene();
         var gameplayScene = new GameplayScene();
         var shopScene = new ShopScene();
-        
+        */
         // Enregistrer les scènes dans le SceneManager
         SceneManager.RegisterScene(mainMenuScene);
+        /*
         SceneManager.RegisterScene(characterSelectionScene);
         SceneManager.RegisterScene(gameplayScene);
         SceneManager.RegisterScene(shopScene);
-        
+        */
         // Charger initialement la scène du menu principal
         SceneManager.LoadScene("MainMenu", 0f); // Transition immédiate
         
@@ -651,9 +647,9 @@ public class GameManager : Game
         Collectibles.Clear();
         
         // Réinitialiser les managers dépendants
-        _waveManager.Reset();
-        _waveManager.Deactivate(); // Désactiver le WaveManager pour qu'il n'essaie pas de générer des ennemis
-        _mapManager.Reset();
+        // _waveManager.Reset();
+        // _waveManager.Deactivate(); // Désactiver le WaveManager pour qu'il n'essaie pas de générer des ennemis
+        // _mapManager.Reset();
         
         // Réinitialiser l'état du jeu
         _gameStarted = false;

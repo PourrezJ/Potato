@@ -9,17 +9,7 @@ namespace Potato.Core.UI
 {
     public static class UIManager
     {
-        public static SpriteFont DefaultFont {
-            get
-            {
-                if (_defaultFont == null)
-                {
-                    _defaultFont = GameManager.Instance.Content.Load<SpriteFont>("DefaultFont");
-                }
-                return _defaultFont;
-            }
-            set => _defaultFont = value;
-        }
+        public static SpriteFont DefaultFont => _defaultFont ??= GameManager.Instance.Content.Load<SpriteFont>("DefaultFont");
         private static SpriteFont _defaultFont;
 
         // Liste des canvas au lieu d'une liste simple d'éléments
@@ -36,6 +26,8 @@ namespace Potato.Core.UI
         {
             try 
             {
+                _defaultFont = GameManager.Instance.Content.Load<SpriteFont>("DefaultFont");
+
                 // Utiliser directement GameManager.Instance au lieu de _game
                 _pixel = new Texture2D(GameManager.Instance.GraphicsDevice, 1, 1);
                 _pixel.SetData(new[] { Color.White });

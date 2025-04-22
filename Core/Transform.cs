@@ -267,6 +267,16 @@ namespace Potato.Core
             Vector2 direction = target - Position;
             Rotation = MathHelper.ToDegrees((float)System.Math.Atan2(direction.Y, direction.X));
         }
+        
+        /// <summary>
+        /// Mise à jour de la transformation basée sur le changement de parent
+        /// Appelé quand le GameObject parent change
+        /// </summary>
+        public void UpdateFromParent()
+        {
+            SetDirty(); // Marquer comme dirty pour forcer la mise à jour
+            UpdateWorldTransform(); // Mettre à jour immédiatement
+        }
 
         #endregion
 

@@ -15,9 +15,16 @@ namespace Potato.Core
         // Liste des GameObjects actifs
         private static readonly List<GameObject> _gameObjects = new List<GameObject>();
         
+        // Dictionnaires pour accélérer l'itération par scène
+        private static readonly Dictionary<Scene, List<GameObject>> _gameObjectsByScene = new Dictionary<Scene, List<GameObject>>();
+        private static readonly List<GameObject> _persistentObjects = new List<GameObject>();
+        
         // Listes pour gérer l'ajout et la suppression en toute sécurité
         private static readonly List<GameObject> _pendingAddition = new List<GameObject>();
         private static readonly List<GameObject> _pendingRemoval = new List<GameObject>();
+        
+        // Cache des objets actifs pour éviter de recréer des listes pendant l'itération
+        private static readonly List<GameObject> _activeObjectsCache = new List<GameObject>();
         
         // Flag pour empêcher les modifications pendant l'itération
         private static bool _isProcessingObjects = false;
@@ -28,8 +35,11 @@ namespace Potato.Core
         public static void Initialize()
         {
             _gameObjects.Clear();
+            _gameObjectsByScene.Clear();
+            _persistentObjects.Clear();
             _pendingAddition.Clear();
             _pendingRemoval.Clear();
+            _activeObjectsCache.Clear();
             _isProcessingObjects = false;
             
             Logger.Instance.Info("GameObjectManager initialisé", LogCategory.Core);
@@ -56,12 +66,35 @@ namespace Potato.Core
                 // Sinon, ajouter directement
                 if (!_gameObjects.Contains(gameObject))
                 {
-                    _gameObjects.Add(gameObject);
+                    AddGameObjectToCollections(gameObject);
                     
                     // Réveiller l'objet (appeler Awake et Start)
                     gameObject.Awake();
                     gameObject.Start();
                 }
+            }
+        }
+        
+        /// <summary>
+        /// Ajoute un GameObject aux collections appropriées
+        /// </summary>
+        private static void AddGameObjectToCollections(GameObject gameObject)
+        {
+            _gameObjects.Add(gameObject);
+            
+            // Aussi ajouter à la collection par scène
+            if (Scene.IsPersistent(gameObject))
+            {
+                _persistentObjects.Add(gameObject);
+            }
+            else if (gameObject.Scene != null)
+            {
+                if (!_gameObjectsByScene.TryGetValue(gameObject.Scene, out var sceneObjects))
+                {
+                    sceneObjects = new List<GameObject>();
+                    _gameObjectsByScene[gameObject.Scene] = sceneObjects;
+                }
+                sceneObjects.Add(gameObject);
             }
         }
         
@@ -84,7 +117,30 @@ namespace Potato.Core
             else
             {
                 // Sinon, supprimer directement
-                _gameObjects.Remove(gameObject);
+                RemoveGameObjectFromCollections(gameObject);
+            }
+        }
+        
+        /// <summary>
+        /// Supprime un GameObject de toutes les collections
+        /// </summary>
+        private static void RemoveGameObjectFromCollections(GameObject gameObject)
+        {
+            _gameObjects.Remove(gameObject);
+            
+            if (Scene.IsPersistent(gameObject))
+            {
+                _persistentObjects.Remove(gameObject);
+            }
+            else if (gameObject.Scene != null && _gameObjectsByScene.TryGetValue(gameObject.Scene, out var sceneObjects))
+            {
+                sceneObjects.Remove(gameObject);
+                
+                // Nettoyer les listes vides
+                if (sceneObjects.Count == 0)
+                {
+                    _gameObjectsByScene.Remove(gameObject.Scene);
+                }
             }
         }
         
@@ -97,19 +153,15 @@ namespace Potato.Core
             
             _isProcessingObjects = true;
             
-            // Mettre à jour tous les objets
-            foreach (var gameObject in _gameObjects.ToList())
+            // Préparer la liste des objets à mettre à jour
+            PrepareActiveObjectsList();
+            
+            // Mettre à jour tous les objets actifs
+            foreach (var gameObject in _activeObjectsCache)
             {
                 try
                 {
-                    if (!gameObject.IsDestroyed && gameObject.IsActive)
-                    {
-                        // Ne mettre à jour que les objets de la scène active ou les objets persistants
-                        if (gameObject.Scene == SceneManager.ActiveScene || Scene.IsPersistent(gameObject))
-                        {
-                            gameObject.Update(gameTime);
-                        }
-                    }
+                    gameObject.Update(gameTime);
                 }
                 catch (Exception ex)
                 {
@@ -129,19 +181,12 @@ namespace Potato.Core
         {
             _isProcessingObjects = true;
             
-            // Dessiner tous les objets
-            foreach (var gameObject in _gameObjects)
+            // Utiliser la même liste d'objets actifs que pour Update
+            foreach (var gameObject in _activeObjectsCache)
             {
                 try
                 {
-                    if (!gameObject.IsDestroyed && gameObject.IsActive)
-                    {
-                        // Ne dessiner que les objets de la scène active ou les objets persistants
-                        if (gameObject.Scene == SceneManager.ActiveScene || Scene.IsPersistent(gameObject))
-                        {
-                            gameObject.Draw(spriteBatch);
-                        }
-                    }
+                    gameObject.Draw(spriteBatch);
                 }
                 catch (Exception ex)
                 {
@@ -152,6 +197,36 @@ namespace Potato.Core
             _isProcessingObjects = false;
             
             ProcessPendingLists();
+        }
+        
+        /// <summary>
+        /// Prépare la liste des objets actifs pour l'itération
+        /// </summary>
+        private static void PrepareActiveObjectsList()
+        {
+            _activeObjectsCache.Clear();
+            
+            // Ajouter les objets de la scène active
+            Scene activeScene = SceneManager.ActiveScene;
+            if (activeScene != null && _gameObjectsByScene.TryGetValue(activeScene, out var sceneObjects))
+            {
+                foreach (var obj in sceneObjects)
+                {
+                    if (!obj.IsDestroyed && obj.IsActive)
+                    {
+                        _activeObjectsCache.Add(obj);
+                    }
+                }
+            }
+            
+            // Ajouter les objets persistants
+            foreach (var obj in _persistentObjects)
+            {
+                if (!obj.IsDestroyed && obj.IsActive)
+                {
+                    _activeObjectsCache.Add(obj);
+                }
+            }
         }
         
         /// <summary>
@@ -207,6 +282,51 @@ namespace Potato.Core
         }
         
         /// <summary>
+        /// Signale qu'un GameObject a changé de scène
+        /// </summary>
+        public static void NotifySceneChanged(GameObject gameObject, Scene oldScene, Scene newScene)
+        {
+            if (_isProcessingObjects)
+            {
+                // Reporter la mise à jour après l'itération
+                _pendingRemoval.Add(gameObject);
+                _pendingAddition.Add(gameObject);
+                return;
+            }
+            
+            // Supprimer de l'ancienne collection
+            if (oldScene != null && _gameObjectsByScene.TryGetValue(oldScene, out var oldSceneObjects))
+            {
+                oldSceneObjects.Remove(gameObject);
+                
+                // Nettoyer les listes vides
+                if (oldSceneObjects.Count == 0)
+                {
+                    _gameObjectsByScene.Remove(oldScene);
+                }
+            }
+            else if (oldScene == null && Scene.IsPersistent(gameObject))
+            {
+                _persistentObjects.Remove(gameObject);
+            }
+            
+            // Ajouter à la nouvelle collection
+            if (Scene.IsPersistent(gameObject))
+            {
+                _persistentObjects.Add(gameObject);
+            }
+            else if (newScene != null)
+            {
+                if (!_gameObjectsByScene.TryGetValue(newScene, out var newSceneObjects))
+                {
+                    newSceneObjects = new List<GameObject>();
+                    _gameObjectsByScene[newScene] = newSceneObjects;
+                }
+                newSceneObjects.Add(gameObject);
+            }
+        }
+        
+        /// <summary>
         /// Traite les listes d'attente
         /// </summary>
         private static void ProcessPendingLists()
@@ -216,7 +336,7 @@ namespace Potato.Core
             {
                 if (!_gameObjects.Contains(gameObject))
                 {
-                    _gameObjects.Add(gameObject);
+                    AddGameObjectToCollections(gameObject);
                     
                     // Réveiller l'objet (appeler Awake et Start)
                     gameObject.Awake();
@@ -228,9 +348,30 @@ namespace Potato.Core
             // Supprimer les objets en attente
             foreach (var gameObject in _pendingRemoval)
             {
-                _gameObjects.Remove(gameObject);
+                RemoveGameObjectFromCollections(gameObject);
             }
             _pendingRemoval.Clear();
+        }
+        
+        /// <summary>
+        /// Obtient le nombre total d'objets actifs gérés
+        /// </summary>
+        public static int Count => _gameObjects.Count;
+        
+        /// <summary>
+        /// Obtient le nombre d'objets dans la scène active
+        /// </summary>
+        public static int ActiveSceneObjectCount
+        {
+            get
+            {
+                var activeScene = SceneManager.ActiveScene;
+                if (activeScene != null && _gameObjectsByScene.TryGetValue(activeScene, out var sceneObjects))
+                {
+                    return sceneObjects.Count;
+                }
+                return 0;
+            }
         }
     }
 }

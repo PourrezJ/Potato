@@ -42,7 +42,7 @@ namespace Potato.Core.Components
         
         public override void Draw(SpriteBatch spriteBatch)
         {
-            if (Texture == null || !IsEnabled)
+            if (Texture == null || !Enabled)
                 return;
             
             // Calculer la position finale (position du transform + offset)
