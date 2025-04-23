@@ -1,7 +1,5 @@
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using System;
-using Potato.Core;
+using Potato.Core.Logging;
 
 namespace Potato.Core.UI.Screens
 {
@@ -83,11 +81,17 @@ namespace Potato.Core.UI.Screens
 
         private void OnPlayButtonClicked()
         {
-            // Changer l'état du jeu pour démarrer la partie
-            GameManager.Instance.SetGameState(GameManager.GameState.CharacterSelection);
+            // Désactiver le bouton pour éviter les clics multiples
+            _playButton.IsEnabled = false;
             
-            // Cacher notre canvas
+            // Cacher notre canvas d'abord
             this.IsVisible = false;
+            
+            // Journaliser l'intention avant de changer d'état
+            Logger.Info("Passage à l'écran de sélection des personnages depuis le menu principal", LogCategory.UI);
+            
+            // Changer l'état du jeu directement, sans délai
+            GameManager.Instance.SetGameState(GameManager.GameState.CharacterSelection);
         }
 
         private void OnOptionsButtonClicked()

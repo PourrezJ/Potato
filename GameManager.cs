@@ -111,8 +111,8 @@ public class GameManager : Game
         string logDir = Path.Combine(baseDir, "Logs");
         
         // Initialize Logger
-        Logger.Instance.Configure(LogLevel.Debug, true, true, true);
-        Logger.Instance.Info("Game initialized");
+        Logger.Configure(LogLevel.Debug, true, false, false);
+        Logger.Info("Game initialized");
         
         // Initialize game entity collections
         Enemies = new List<Enemy>();
@@ -129,7 +129,7 @@ public class GameManager : Game
 
     protected override void Initialize()
     {
-        Logger.Instance.Info("BehaviourManager initialisé", LogCategory.Core);
+        Logger.Info("BehaviourManager initialisé", LogCategory.Core);
         
         base.Initialize();
     }
@@ -142,22 +142,22 @@ public class GameManager : Game
         {             
             // Initialiser le BehaviourManager
             //BehaviourManager.DiscoverBehaviours();
-            //Logger.Instance.Info("Behaviors discovery completed");
+            //Logger.Info("Behaviors discovery completed");
 
             // Initialiser le UIManager
             UIManager.Initialize();
 
             // // Initialize log viewer
             // _logViewer = new LogViewer(this);
-            // Logger.Instance.Info("LogViewer initialized");
+            // Logger.Info("LogViewer initialized");
 
             // Initialiser le GameObjectManager
             GameObjectManager.Initialize();
-            Logger.Instance.Info("GameObjectManager initialisé", LogCategory.Core);
+            Logger.Info("GameObjectManager initialisé", LogCategory.Core);
             
             // Initialiser le SceneManager
             SceneManager.Initialize();
-            Logger.Instance.Info("SceneManager initialisé", LogCategory.Core);
+            Logger.Info("SceneManager initialisé", LogCategory.Core);
 
             // Initialiser les gestionnaires de jeu
             // _waveManager = WaveManager.Instance;
@@ -166,14 +166,14 @@ public class GameManager : Game
 
             // Créer et enregistrer les scènes principales du jeu
             CreateAndRegisterScenes();
-
-            //MainMenuCanvas.CreateUI();
                  
-            Logger.Instance.Info("All screens initialized");
+            MainMenuCanvas.Current.IsVisible = true;
+
+            Logger.Info("All screens initialized");
         }
         catch (Exception ex)
         {
-            Logger.Instance.Error($"Error during content loading: {ex.Message}", LogCategory.Core);
+            Logger.Error($"Error during content loading: {ex.Message}", LogCategory.Core);
         }       
     }
     
@@ -183,23 +183,23 @@ public class GameManager : Game
     private void CreateAndRegisterScenes()
     {
         // Créer les scènes principales avec les classes spécifiques
-        var mainMenuScene = new MainMenuScene();
-        /*
+        var mainMenuScene = new MainMenuScene();    
         var characterSelectionScene = new CharacterSelectionScene();
+        /*
         var gameplayScene = new GameplayScene();
         var shopScene = new ShopScene();
         */
         // Enregistrer les scènes dans le SceneManager
-        SceneManager.RegisterScene(mainMenuScene);
-        /*
+        SceneManager.RegisterScene(mainMenuScene);    
         SceneManager.RegisterScene(characterSelectionScene);
+        /*
         SceneManager.RegisterScene(gameplayScene);
         SceneManager.RegisterScene(shopScene);
         */
         // Charger initialement la scène du menu principal
         SceneManager.LoadScene("MainMenu", 0f); // Transition immédiate
         
-        Logger.Instance.Info("Scènes créées et enregistrées avec succès", LogCategory.Core);
+        Logger.Info("Scènes créées et enregistrées avec succès", LogCategory.Core);
     }
 
     protected override void Update(GameTime gameTime)
@@ -251,12 +251,15 @@ public class GameManager : Game
         {
             DrawGameElements();
         }
-                     
-        // Draw LogViewer on top of everything if it's visible
-        _logViewer?.Draw(_spriteBatch);
         
         // End sprite batch
         _spriteBatch.End();
+        
+        // Dessiner l'UI avec UIManager - AJOUT IMPORTANT pour afficher le menu
+        UIManager.Draw(_spriteBatch);
+                     
+        // Draw LogViewer on top of everything if it's visible
+        _logViewer?.Draw(_spriteBatch);
 
         base.Draw(gameTime);
     }
@@ -264,7 +267,7 @@ public class GameManager : Game
     protected override void OnExiting(object sender, Microsoft.Xna.Framework.ExitingEventArgs args)
     {
         // Clean up resources before exiting
-        Logger.Instance.Info("Game exiting", LogCategory.Gameplay);
+        Logger.Info("Game exiting", LogCategory.Gameplay);
         
         base.OnExiting(sender, args);
     }
@@ -278,26 +281,7 @@ public class GameManager : Game
         GameState previousState = _currentGameState;
         _currentGameState = gameState;
         
-        Logger.Instance.Info($"Game state changed from {previousState} to: {_currentGameState}", LogCategory.Gameplay);
-        
-        // Changer également la scène en fonction de l'état du jeu
-        switch (_currentGameState)
-        {
-            case GameState.MainMenu:
-                SceneManager.LoadScene("MainMenu", 0.3f);
-                break;
-            case GameState.CharacterSelection:
-                SceneManager.LoadScene("CharacterSelection", 0.3f);
-                break;
-            case GameState.Playing:
-                SceneManager.LoadScene("Gameplay", 0.3f);
-                break;
-            case GameState.Shopping:
-                SceneManager.LoadScene("Shop", 0.3f);
-                break;
-        }
-        
-        // Note: la gestion des canvas se fait maintenant manuellement
+        Logger.Info($"Game state changed from {previousState} to: {_currentGameState}", LogCategory.Gameplay);  
     }
     
     public void RestartGame()
@@ -326,7 +310,7 @@ public class GameManager : Game
         Player.Position = new Vector2(
             GraphicsDevice.Viewport.Width / 2,
             GraphicsDevice.Viewport.Height / 2);
-        Logger.Instance.Info($"Joueur positionné au centre: {Player.Position.X}, {Player.Position.Y}", LogCategory.Gameplay);
+        Logger.Info($"Joueur positionné au centre: {Player.Position.X}, {Player.Position.Y}", LogCategory.Gameplay);
 
      
         _selectedWeapon.Initialize();
@@ -519,7 +503,7 @@ public class GameManager : Game
     /// </summary>
     private void OnWaveCompletedHandler(int waveNumber)
     {
-        Logger.Instance.Info($"Wave {waveNumber} completed - Opening shop");
+        Logger.Info($"Wave {waveNumber} completed - Opening shop");
         
         try
         {
@@ -533,11 +517,11 @@ public class GameManager : Game
             SetGameState(GameState.Shopping);
 
             
-            Logger.Instance.Info("Shop opened successfully");
+            Logger.Info("Shop opened successfully");
         }
         catch (Exception ex)
         {
-            Logger.Instance.Error($"Error opening shop: {ex.Message}");
+            Logger.Error($"Error opening shop: {ex.Message}");
             // In case of error, continue playing
             SetGameState(GameState.Playing);
         }

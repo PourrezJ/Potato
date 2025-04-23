@@ -27,7 +27,7 @@ namespace Potato.Core.UI
             var canvas = UIManager.GetCanvas(canvasName);
             if (canvas == null)
             {
-                Logger.Instance.Warning($"Le canvas '{canvasName}' n'existe pas et ne peut pas être affiché", LogCategory.UI);
+                Logger.Warning($"Le canvas '{canvasName}' n'existe pas et ne peut pas être affiché", LogCategory.UI);
                 return;
             }
             
@@ -38,7 +38,7 @@ namespace Potato.Core.UI
             if (!_visibleCanvases.Contains(canvasName))
             {
                 _visibleCanvases.Add(canvasName);
-                Logger.Instance.Debug($"Canvas '{canvasName}' marqué comme visible", LogCategory.UI);
+                Logger.Debug($"Canvas '{canvasName}' marqué comme visible", LogCategory.UI);
             }
         }
         
@@ -54,7 +54,7 @@ namespace Potato.Core.UI
             if (_visibleCanvases.Contains(canvasName))
             {
                 _visibleCanvases.Remove(canvasName);
-                Logger.Instance.Debug($"Canvas '{canvasName}' masqué", LogCategory.UI);
+                Logger.Debug($"Canvas '{canvasName}' masqué", LogCategory.UI);
             }
         }
         
@@ -71,7 +71,7 @@ namespace Potato.Core.UI
                 HideCanvas(canvasName);
             }
             
-            Logger.Instance.Info("Tous les canvas ont été masqués", LogCategory.UI);
+            Logger.Info("Tous les canvas ont été masqués", LogCategory.UI);
         }
         
         /// <summary>
@@ -93,7 +93,7 @@ namespace Potato.Core.UI
             // S'assurer que le canvas spécifié est visible
             ShowCanvas(canvasName);
             
-            Logger.Instance.Info($"Seul le canvas '{canvasName}' est maintenant visible", LogCategory.UI);
+            Logger.Info($"Seul le canvas '{canvasName}' est maintenant visible", LogCategory.UI);
         }
         
         /// <summary>

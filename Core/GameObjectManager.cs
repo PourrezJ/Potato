@@ -42,7 +42,7 @@ namespace Potato.Core
             _activeObjectsCache.Clear();
             _isProcessingObjects = false;
             
-            Logger.Instance.Info("GameObjectManager initialisé", LogCategory.Core);
+            Logger.Info("GameObjectManager initialisé", LogCategory.Core);
         }
         
         /// <summary>
@@ -165,7 +165,7 @@ namespace Potato.Core
                 }
                 catch (Exception ex)
                 {
-                    Logger.Instance.Error($"Erreur lors de la mise à jour de {gameObject.Name}: {ex.Message}", LogCategory.Core);
+                    Logger.Error($"Erreur lors de la mise à jour de {gameObject.Name}: {ex.Message}", LogCategory.Core);
                 }
             }
             
@@ -190,7 +190,7 @@ namespace Potato.Core
                 }
                 catch (Exception ex)
                 {
-                    Logger.Instance.Error($"Erreur lors du dessin de {gameObject.Name}: {ex.Message}", LogCategory.Core);
+                    Logger.Error($"Erreur lors du dessin de {gameObject.Name}: {ex.Message}", LogCategory.Core);
                 }
             }
             

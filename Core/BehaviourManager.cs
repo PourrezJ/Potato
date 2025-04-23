@@ -62,11 +62,11 @@ namespace Potato.Core
                 // Puis initialiser les types normaux
                 InstantiateBehaviourTypes(normalTypes, game);
                 
-                //Logger.Instance.Info($"Découvert {_behaviours.Count} behaviours via réflexion", LogCategory.Core);
+                //Logger.Info($"Découvert {_behaviours.Count} behaviours via réflexion", LogCategory.Core);
             }
             catch (Exception ex)
             {
-                Logger.Instance.Error($"Erreur lors de la découverte des behaviours: {ex.Message}", LogCategory.Core);
+                Logger.Error($"Erreur lors de la découverte des behaviours: {ex.Message}", LogCategory.Core);
             }
         }
         
@@ -83,7 +83,7 @@ namespace Potato.Core
                     bool alreadyExists = _behaviours.Any(b => b.GetType() == type);
                     if (alreadyExists)
                     {
-                        Logger.Instance.Debug($"Comportement {type.Name} déjà instancié, ignoré", LogCategory.Core);
+                        Logger.Debug($"Comportement {type.Name} déjà instancié, ignoré", LogCategory.Core);
                         continue;
                     }
                     
@@ -105,11 +105,11 @@ namespace Potato.Core
                         continue;
                     }
                     
-                    Logger.Instance.Warning($"Impossible de créer le behaviour {type.Name} : aucun constructeur compatible", LogCategory.Core);
+                    Logger.Warning($"Impossible de créer le behaviour {type.Name} : aucun constructeur compatible", LogCategory.Core);
                 }
                 catch (Exception ex)
                 {
-                    Logger.Instance.Error($"Erreur lors de la création du behaviour {type.Name}: {ex.Message}", LogCategory.Core);
+                    Logger.Error($"Erreur lors de la création du behaviour {type.Name}: {ex.Message}", LogCategory.Core);
                 }
             }
         }
@@ -135,7 +135,7 @@ namespace Potato.Core
                 // Activer le comportement pour déclencher le cycle de vie (Awake, OnEnable, Start)
                 behaviour.Enable();
                 
-                //Logger.Instance.Debug($"Behaviour {behaviour.GetType().Name} enregistré avec priorité {behaviour.ExecutionOrder}", LogCategory.Core);
+                //Logger.Debug($"Behaviour {behaviour.GetType().Name} enregistré avec priorité {behaviour.ExecutionOrder}", LogCategory.Core);
                 RequestSortBehaviours();
             }
         }
@@ -151,7 +151,7 @@ namespace Potato.Core
             if (attribute != null)
             {
                 behaviour.ExecutionOrder = attribute.Order;
-                Logger.Instance.Debug($"Attribut ExecutionOrder {attribute.Order} appliqué à {type.Name}", LogCategory.Core);
+                Logger.Debug($"Attribut ExecutionOrder {attribute.Order} appliqué à {type.Name}", LogCategory.Core);
             }
         }
         
@@ -170,7 +170,7 @@ namespace Potato.Core
             {
                 behaviour.Destroy();
                 _behaviours.Remove(behaviour);
-                Logger.Instance.Debug($"Behaviour {behaviour.GetType().Name} désenregistré", LogCategory.Core);
+                Logger.Debug($"Behaviour {behaviour.GetType().Name} désenregistré", LogCategory.Core);
             }
         }
         
@@ -189,7 +189,7 @@ namespace Potato.Core
         {
             _behaviours = _behaviours.OrderBy(b => b.ExecutionOrder).ToList();
             _needsSort = false;
-            Logger.Instance.Debug("Behaviours triés par ordre d'exécution", LogCategory.Core);
+            Logger.Debug("Behaviours triés par ordre d'exécution", LogCategory.Core);
         }
         
         /// <summary>
@@ -214,7 +214,7 @@ namespace Potato.Core
                     }
                     catch (Exception ex)
                     {
-                        Logger.Instance.Error($"Erreur dans Update de {behaviour.GetType().Name}: {ex.Message}", LogCategory.Core);
+                        Logger.Error($"Erreur dans Update de {behaviour.GetType().Name}: {ex.Message}", LogCategory.Core);
                     }
                 }
             }
@@ -247,7 +247,7 @@ namespace Potato.Core
                     }
                     catch (Exception ex)
                     {
-                        Logger.Instance.Error($"Erreur dans Draw de {behaviour.GetType().Name}: {ex.Message}", LogCategory.Core);
+                        Logger.Error($"Erreur dans Draw de {behaviour.GetType().Name}: {ex.Message}", LogCategory.Core);
                     }
                 }
             }
@@ -329,7 +329,7 @@ namespace Potato.Core
                 }
                 catch (Exception ex)
                 {
-                    Logger.Instance.Error($"Erreur lors de la destruction de {behaviour.GetType().Name}: {ex.Message}", LogCategory.Core);
+                    Logger.Error($"Erreur lors de la destruction de {behaviour.GetType().Name}: {ex.Message}", LogCategory.Core);
                 }
             }
             
@@ -337,7 +337,7 @@ namespace Potato.Core
             _pendingAddition.Clear();
             _pendingRemoval.Clear();
             
-            Logger.Instance.Info("BehaviourManager détruit", LogCategory.Core);
+            Logger.Info("BehaviourManager détruit", LogCategory.Core);
         }
     }
 }

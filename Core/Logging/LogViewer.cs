@@ -84,7 +84,7 @@ namespace Potato.Core.Logging
             spriteBatch.Draw(pixel, new Rectangle(0, 0, width, height / 2), _backgroundColor * _opacity);
             
             // Récupérer les logs récents
-            List<LogEntry> logEntries = Logger.Instance.GetRecentLogs();
+            List<LogEntry> logEntries = Logger.GetRecentLogs();
             List<string> logs = logEntries.Select(entry => entry.ToString()).ToList();
             
             // S'assurer que le défilement ne dépasse pas la limite des logs disponibles
@@ -135,7 +135,7 @@ namespace Potato.Core.Logging
         public void Toggle()
         {
             _isVisible = !_isVisible;
-            Logger.Instance.Info($"Log viewer {(_isVisible ? "visible" : "hidden")}");
+            Logger.Info($"Log viewer {(_isVisible ? "visible" : "hidden")}");
         }
         
         public bool IsVisible => _isVisible;

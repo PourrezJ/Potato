@@ -51,7 +51,7 @@ namespace Potato.Core
                 
             // Initialiser l'état
             _isLoaded = true;
-            Logger.Instance.Info($"Scene '{_name}' loaded", LogCategory.Core);
+            Logger.Info($"Scene '{_name}' loaded", LogCategory.Core);
             
             // Déclencher l'événement
             OnSceneLoaded?.Invoke();
@@ -68,7 +68,7 @@ namespace Potato.Core
             }
             
             _isActive = true;
-            Logger.Instance.Info($"Scene '{_name}' activated", LogCategory.Core);
+            Logger.Info($"Scene '{_name}' activated", LogCategory.Core);
         }
         
         /// <summary>
@@ -77,7 +77,7 @@ namespace Potato.Core
         public virtual void Deactivate()
         {
             _isActive = false;
-            Logger.Instance.Info($"Scene '{_name}' deactivated", LogCategory.Core);
+            Logger.Info($"Scene '{_name}' deactivated", LogCategory.Core);
         }
         
         /// <summary>
@@ -106,7 +106,7 @@ namespace Potato.Core
             // Déclencher l'événement
             OnSceneUnloaded?.Invoke();
             
-            Logger.Instance.Info($"Scene '{_name}' unloaded", LogCategory.Core);
+            Logger.Info($"Scene '{_name}' unloaded", LogCategory.Core);
         }
         
         /// <summary>
@@ -136,7 +136,7 @@ namespace Potato.Core
             if (gameObject != null && !_persistentObjects.Contains(gameObject))
             {
                 _persistentObjects.Add(gameObject);
-                Logger.Instance.Debug($"GameObject '{gameObject.Name}' marked as persistent", LogCategory.Core);
+                Logger.Debug($"GameObject '{gameObject.Name}' marked as persistent", LogCategory.Core);
             }
         }
         
@@ -148,7 +148,7 @@ namespace Potato.Core
             if (gameObject != null && _persistentObjects.Contains(gameObject))
             {
                 _persistentObjects.Remove(gameObject);
-                Logger.Instance.Debug($"GameObject '{gameObject.Name}' no longer persistent", LogCategory.Core);
+                Logger.Debug($"GameObject '{gameObject.Name}' no longer persistent", LogCategory.Core);
             }
         }
         

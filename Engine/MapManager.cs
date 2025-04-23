@@ -64,7 +64,7 @@ namespace Potato.Engine
             // Conserver une référence à l'instance pour la transition
             _instance = this;
             
-            Logger.Instance.Info("MapManager instance créée - En attente d'initialisation", LogCategory.Gameplay);
+            Logger.Info("MapManager instance créée - En attente d'initialisation", LogCategory.Gameplay);
         }
         
         /// <summary>
@@ -76,7 +76,7 @@ namespace Potato.Engine
             
             // Initialiser les ressources lors de l'activation
             InitializeResources();
-            Logger.Instance.Info("MapManager activé", LogCategory.Gameplay);
+            Logger.Info("MapManager activé", LogCategory.Gameplay);
         }
         
         /// <summary>
@@ -88,7 +88,7 @@ namespace Potato.Engine
             
             // Nettoyer les ressources
             Cleanup();
-            Logger.Instance.Info("MapManager désactivé", LogCategory.Gameplay);
+            Logger.Info("MapManager désactivé", LogCategory.Gameplay);
         }
         
         /// <summary>
@@ -129,7 +129,7 @@ namespace Potato.Engine
             // Créer une texture de sol
             CreateGroundTexture();
 
-            Logger.Instance.Info($"MapManager initialisé - Dimensions: {MapWidth}x{MapHeight}", LogCategory.Gameplay);
+            Logger.Info($"MapManager initialisé - Dimensions: {MapWidth}x{MapHeight}", LogCategory.Gameplay);
         }
 
         /// <summary>
@@ -178,7 +178,7 @@ namespace Potato.Engine
             // Appliquer les données de couleurs à la texture
             _groundTexture.SetData(colorData);
             
-            Logger.Instance.Info("Texture de sol générée avec succès", LogCategory.Gameplay);
+            Logger.Info("Texture de sol générée avec succès", LogCategory.Gameplay);
         }
 
         /// <summary>
@@ -192,7 +192,7 @@ namespace Potato.Engine
                 MapHeight = GameManager.Instance.GraphicsDevice.Viewport.Height;
                 Bounds = new Rectangle(0, 0, MapWidth, MapHeight);
                 
-                Logger.Instance.Debug($"Dimensions de la carte mises à jour: {MapWidth}x{MapHeight}", LogCategory.Gameplay);
+                Logger.Debug($"Dimensions de la carte mises à jour: {MapWidth}x{MapHeight}", LogCategory.Gameplay);
             }
         }
 
@@ -203,7 +203,7 @@ namespace Potato.Engine
         {
             if (GameManager.Instance == null)
             {
-                Logger.Instance.Error("Tentative de génération de carte sans initialisation", LogCategory.Gameplay);
+                Logger.Error("Tentative de génération de carte sans initialisation", LogCategory.Gameplay);
                 return;
             }
 
@@ -238,7 +238,7 @@ namespace Potato.Engine
             // Générer une ou plusieurs zones dangereuses
             GenerateDangerZones();
 
-            Logger.Instance.Info($"Nouvelle carte générée avec {_obstacles.Count} obstacles et {_decorations.Count} décorations", LogCategory.Gameplay);
+            Logger.Info($"Nouvelle carte générée avec {_obstacles.Count} obstacles et {_decorations.Count} décorations", LogCategory.Gameplay);
         }
 
         /// <summary>
@@ -548,7 +548,7 @@ namespace Potato.Engine
             // Générer une nouvelle carte
             GenerateMap();
             
-            Logger.Instance.Info("Carte réinitialisée", LogCategory.Gameplay);
+            Logger.Info("Carte réinitialisée", LogCategory.Gameplay);
         }
     }
 }

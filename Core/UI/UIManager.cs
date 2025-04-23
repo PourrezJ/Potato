@@ -32,11 +32,11 @@ namespace Potato.Core.UI
                 _pixel = new Texture2D(GameManager.Instance.GraphicsDevice, 1, 1);
                 _pixel.SetData(new[] { Color.White });
                 
-                Logger.Instance.Info("UIManager initialisé avec succès", LogCategory.UI);
+                Logger.Info("UIManager initialisé avec succès", LogCategory.UI);
             }
             catch (Exception ex) 
             {
-                Logger.Instance.Error($"Erreur lors de l'initialisation du UIManager: {ex.Message}", LogCategory.UI);
+                Logger.Error($"Erreur lors de l'initialisation du UIManager: {ex.Message}", LogCategory.UI);
             }
         }
 
@@ -51,7 +51,7 @@ namespace Potato.Core.UI
                 {
                     _canvasByName[canvas.Name] = canvas;
                 }
-                Logger.Instance.Debug($"Canvas '{canvas.Name}' enregistré", LogCategory.UI);
+                Logger.Debug($"Canvas '{canvas.Name}' enregistré", LogCategory.UI);
             }
         }
         
@@ -64,7 +64,7 @@ namespace Potato.Core.UI
                 {
                     _canvasByName.Remove(canvas.Name);
                 }
-                Logger.Instance.Debug($"Canvas '{canvas.Name}' désenregistré", LogCategory.UI);
+                Logger.Debug($"Canvas '{canvas.Name}' désenregistré", LogCategory.UI);
             }
         }
         
@@ -80,7 +80,7 @@ namespace Potato.Core.UI
         {
             if (_canvasByName.ContainsKey(name))
             {
-                Logger.Instance.Warning($"Un canvas avec le nom '{name}' existe déjà", LogCategory.UI);
+                Logger.Warning($"Un canvas avec le nom '{name}' existe déjà", LogCategory.UI);
                 return _canvasByName[name];
             }
             
@@ -96,7 +96,7 @@ namespace Potato.Core.UI
             if (canvas != null)
             {
                 canvas.IsVisible = true;
-                Logger.Instance.Debug($"Canvas '{name}' affiché", LogCategory.UI);
+                Logger.Debug($"Canvas '{name}' affiché", LogCategory.UI);
             }
         }
         
@@ -106,7 +106,7 @@ namespace Potato.Core.UI
             if (canvas != null)
             {
                 canvas.IsVisible = false;
-                Logger.Instance.Debug($"Canvas '{name}' masqué", LogCategory.UI);
+                Logger.Debug($"Canvas '{name}' masqué", LogCategory.UI);
             }
         }
         
@@ -116,7 +116,7 @@ namespace Potato.Core.UI
             {
                 canvas.IsVisible = false;
             }
-            Logger.Instance.Debug("Tous les canvas ont été masqués", LogCategory.UI);
+            Logger.Debug("Tous les canvas ont été masqués", LogCategory.UI);
         }
         
         #endregion
@@ -150,7 +150,7 @@ namespace Potato.Core.UI
                     // Déboguer l'élément survolé
                     if (_hoveredElement is Button button)
                     {
-                        Logger.Instance.Debug($"Button '{button.Text}' is hovered at {mousePosition.X},{mousePosition.Y}", LogCategory.UI);
+                        Logger.Debug($"Button '{button.Text}' is hovered at {mousePosition.X},{mousePosition.Y}", LogCategory.UI);
                     }
                 }
             }
@@ -176,7 +176,7 @@ namespace Potato.Core.UI
                 if (_pressedElement != null && _pressedElement == _hoveredElement)
                 {
                     // Un clic complet a été réalisé sur le même élément
-                    Logger.Instance.Debug($"UI Element clicked at {mousePosition.X},{mousePosition.Y}", LogCategory.UI);
+                    Logger.Debug($"UI Element clicked at {mousePosition.X},{mousePosition.Y}", LogCategory.UI);
                     
                     // Déclencher l'événement de clic
                     _pressedElement.TriggerClick();
@@ -249,7 +249,7 @@ namespace Potato.Core.UI
                     catch (System.Exception ex)
                     {
                         // Journaliser l'erreur et continuer
-                        Logger.Instance.Error($"Erreur lors du raycast sur l'élément {element.GetType().Name}: {ex.Message}", LogCategory.UI);
+                        Logger.Error($"Erreur lors du raycast sur l'élément {element.GetType().Name}: {ex.Message}", LogCategory.UI);
                         continue;
                     }
                 }
@@ -297,7 +297,7 @@ namespace Potato.Core.UI
             catch (System.Exception ex)
             {
                 // Journaliser l'erreur et continuer
-                Logger.Instance.Error($"Erreur lors du raycast sur les enfants de {parent.GetType().Name}: {ex.Message}", LogCategory.UI);
+                Logger.Error($"Erreur lors du raycast sur les enfants de {parent.GetType().Name}: {ex.Message}", LogCategory.UI);
             }
             
             return null; // Aucun enfant touché
@@ -323,7 +323,7 @@ namespace Potato.Core.UI
             {
                 if (_pixel == null)
                 {
-                    Logger.Instance.Warning("Tentative d'accès à Pixel alors qu'il n'est pas initialisé", LogCategory.UI);
+                    Logger.Warning("Tentative d'accès à Pixel alors qu'il n'est pas initialisé", LogCategory.UI);
                     // Si possible, tenter de créer un pixel à la volée si GraphicsDevice est disponible
                     try
                     {
@@ -331,12 +331,12 @@ namespace Potato.Core.UI
                         {
                             _pixel = new Texture2D(GameManager.Instance.GraphicsDevice, 1, 1);
                             _pixel.SetData(new[] { Color.White });
-                            Logger.Instance.Info("Pixel créé à la volée", LogCategory.UI);
+                            Logger.Info("Pixel créé à la volée", LogCategory.UI);
                         }
                     }
                     catch (Exception ex)
                     {
-                        Logger.Instance.Error($"Impossible de créer un pixel à la volée: {ex.Message}", LogCategory.UI);
+                        Logger.Error($"Impossible de créer un pixel à la volée: {ex.Message}", LogCategory.UI);
                     }
                 }
                 return _pixel;

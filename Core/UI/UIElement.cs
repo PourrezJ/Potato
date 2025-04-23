@@ -121,7 +121,7 @@ namespace Potato.Core.UI
             // Pour le débogage - Afficher lorsqu'un bouton est survolé
             if (IsHovered && this is Button button)
             {
-                Logger.Instance.Debug($"Button '{button.Text}' is hovered at point {currentMouseState.X},{currentMouseState.Y}", LogCategory.UI);
+                Logger.Debug($"Button '{button.Text}' is hovered at point {currentMouseState.X},{currentMouseState.Y}", LogCategory.UI);
             }
             
             // Gérer l'événement de survol
@@ -139,7 +139,7 @@ namespace Potato.Core.UI
                 currentMouseState.LeftButton == ButtonState.Released && 
                 previousMouseState.LeftButton == ButtonState.Pressed)
             {
-                Logger.Instance.Debug($"UI Element clicked at {currentMouseState.X},{currentMouseState.Y}", LogCategory.UI);
+                Logger.Debug($"UI Element clicked at {currentMouseState.X},{currentMouseState.Y}", LogCategory.UI);
                 OnClick?.Invoke(this);
             }
             
@@ -229,7 +229,7 @@ namespace Potato.Core.UI
                 Vector2 absolutePosition = Position;
                 
                 // Ajouter plus de logs pour déboguer les positions
-                Logger.Instance.Debug($"Element position: {Position.X},{Position.Y}, Size: {Size.X},{Size.Y}", LogCategory.UI);
+                Logger.Debug($"Element position: {Position.X},{Position.Y}, Size: {Size.X},{Size.Y}", LogCategory.UI);
                 
                 // Vérifier si le point est dans nos limites absolues
                 Rectangle absoluteBounds = new Rectangle(
@@ -239,7 +239,7 @@ namespace Potato.Core.UI
                     (int)(Size.Y * Scale)
                 );
                 
-                Logger.Instance.Debug($"Checking point {point.X},{point.Y} against bounds {absoluteBounds}", LogCategory.UI);
+                Logger.Debug($"Checking point {point.X},{point.Y} against bounds {absoluteBounds}", LogCategory.UI);
                 
                 return absoluteBounds.Contains(point);
             }
@@ -398,7 +398,7 @@ namespace Potato.Core.UI
         
         public void TriggerClick()
         {
-            Logger.Instance.Debug($"TriggerClick called on {GetType().Name}", LogCategory.UI);
+            Logger.Debug($"TriggerClick called on {GetType().Name}", LogCategory.UI);
             
             // Invoquer l'événement OnClick
             OnClick?.Invoke(this);
@@ -406,14 +406,14 @@ namespace Potato.Core.UI
             // Si c'est un bouton avec une action directe, l'exécuter directement
             if (this is Button button && button.OnClickAction != null)
             {
-                Logger.Instance.Info($"Executing OnClickAction for button '{button.Text}'", LogCategory.UI);
+                Logger.Info($"Executing OnClickAction for button '{button.Text}'", LogCategory.UI);
                 try
                 {
                     button.OnClickAction.Invoke();
                 }
                 catch (Exception ex)
                 {
-                    Logger.Instance.Error($"Error executing OnClickAction: {ex.Message}", LogCategory.UI);
+                    Logger.Error($"Error executing OnClickAction: {ex.Message}", LogCategory.UI);
                 }
             }
         }

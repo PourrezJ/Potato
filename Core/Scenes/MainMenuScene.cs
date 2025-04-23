@@ -26,7 +26,7 @@ namespace Potato.Core.Scenes
         
         private void InitializeMainMenu()
         {
-            Logger.Instance.Debug("Initialisation du menu principal", LogCategory.UI);
+            Logger.Debug("Initialisation du menu principal", LogCategory.UI);
             
             // Créer un GameObject pour l'interface du menu principal
             _mainMenuObject = new GameObject("MainMenuUI");
@@ -55,7 +55,7 @@ namespace Potato.Core.Scenes
                 _mainMenuObject = null;
             }
             
-            Logger.Instance.Debug("Nettoyage du menu principal", LogCategory.UI);
+            Logger.Debug("Nettoyage du menu principal", LogCategory.UI);
         }
         
         public override void Update(GameTime gameTime)

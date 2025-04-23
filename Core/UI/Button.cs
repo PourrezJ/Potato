@@ -60,7 +60,7 @@ namespace Potato.Core.UI
             HasBorder = true;
             BorderThickness = 1;
             
-            InitializeEvents();
+            // InitializeEvents();
         }
         
         public Button(Vector2 position, Vector2 size, string text, SpriteFont font) : base(position, size)
@@ -74,43 +74,43 @@ namespace Potato.Core.UI
             HasBorder = true;
             BorderThickness = 1;
             
-            InitializeEvents();
+            // InitializeEvents();
         }
         
-        private void InitializeEvents()
-        {
-            // Configurer les événements
-            OnClick += (sender) => {
-                if (IsEnabled && OnClickAction != null)
-                {
-                    // Jouer le son si défini
-                    // if (!string.IsNullOrEmpty(ClickSoundEffect))
-                    //     SoundManager.PlayEffect(ClickSoundEffect);
+        // private void InitializeEvents()
+        // {
+        //     // Configurer les événements
+        //     OnClick += (sender) => {
+        //         if (IsEnabled && OnClickAction != null)
+        //         {
+        //             // Jouer le son si défini
+        //             // if (!string.IsNullOrEmpty(ClickSoundEffect))
+        //             //     SoundManager.PlayEffect(ClickSoundEffect);
                         
-                    OnClickAction();
-                }
-            };
+        //             OnClickAction();
+        //         }
+        //     };
             
-            OnHover += (sender) => {
-                // Animation de survol
-                if (IsEnabled)
-                {
-                    StartTransition("Scale", HoverScaleEffect, 0.1f, EasingFunctions.EaseOutQuad);
+        //     OnHover += (sender) => {
+        //         // Animation de survol
+        //         if (IsEnabled)
+        //         {
+        //             StartTransition("Scale", HoverScaleEffect, 0.1f, EasingFunctions.EaseOutQuad);
                     
-                    // Jouer le son si défini
-                    // if (!string.IsNullOrEmpty(HoverSoundEffect))
-                    //     SoundManager.PlayEffect(HoverSoundEffect);
-                }
-            };
+        //             // Jouer le son si défini
+        //             // if (!string.IsNullOrEmpty(HoverSoundEffect))
+        //             //     SoundManager.PlayEffect(HoverSoundEffect);
+        //         }
+        //     };
             
-            OnHoverExit += (sender) => {
-                // Animation de retour à la normale
-                if (IsEnabled)
-                {
-                    StartTransition("Scale", 1.0f, 0.1f, EasingFunctions.EaseOutQuad);
-                }
-            };
-        }
+        //     OnHoverExit += (sender) => {
+        //         // Animation de retour à la normale
+        //         if (IsEnabled)
+        //         {
+        //             StartTransition("Scale", 1.0f, 0.1f, EasingFunctions.EaseOutQuad);
+        //         }
+        //     };
+        // }
         
         public override void Update(GameTime gameTime)
         {
@@ -329,7 +329,7 @@ namespace Potato.Core.UI
             }
             catch (Exception ex)
             {
-                Logger.Instance.Error($"Erreur lors du dessin du texte '{Text}': {ex.Message}", LogCategory.UI);
+                Logger.Error($"Erreur lors du dessin du texte '{Text}': {ex.Message}", LogCategory.UI);
             }
         }
         
@@ -358,7 +358,7 @@ namespace Potato.Core.UI
                     // Log une fois seulement
                     if (cornerRadius > 0)
                     {
-                        Logger.Instance.Debug("Utilisation du fallback pour dessiner un rectangle aux coins arrondis", LogCategory.UI);
+                        Logger.Debug("Utilisation du fallback pour dessiner un rectangle aux coins arrondis", LogCategory.UI);
                     }
                 }
             }

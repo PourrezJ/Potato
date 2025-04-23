@@ -26,7 +26,7 @@ namespace Potato.Core.Scenes
             // S'abonner aux événements de scène
             OnSceneUpdate += UpdateGameplay;
             
-            Logger.Instance.Info("GameplayScene créée - prête à activer les managers quand nécessaire", LogCategory.Gameplay);
+            Logger.Info("GameplayScene créée - prête à activer les managers quand nécessaire", LogCategory.Gameplay);
         }
         
         public override void Load()
@@ -36,7 +36,7 @@ namespace Potato.Core.Scenes
             // Vérifier si le joueur existe déjà
             if (_gameManager.Player == null)
             {
-                Logger.Instance.Warning("Aucun joueur n'a été créé lors du chargement de la scène de gameplay", LogCategory.Gameplay);
+                Logger.Warning("Aucun joueur n'a été créé lors du chargement de la scène de gameplay", LogCategory.Gameplay);
             }
         }
         
@@ -48,27 +48,27 @@ namespace Potato.Core.Scenes
         {
             base.Activate();
             
-            Logger.Instance.Info("Activation de la scène de gameplay", LogCategory.Gameplay);
+            Logger.Info("Activation de la scène de gameplay", LogCategory.Gameplay);
             
             // Activer le WaveManager (déjà initialisé dans GameManager)
             if (_waveManager != null)
             {
                 //_waveManager.Activate();
-                Logger.Instance.Info("WaveManager activé par la scène de gameplay", LogCategory.Gameplay);
+                Logger.Info("WaveManager activé par la scène de gameplay", LogCategory.Gameplay);
             }
             
             // Activer le MapManager (déjà initialisé dans GameManager)
             if (_mapManager != null)
             {
                 //_mapManager.Activate();
-                Logger.Instance.Info("MapManager activé par la scène de gameplay", LogCategory.Gameplay);
+                Logger.Info("MapManager activé par la scène de gameplay", LogCategory.Gameplay);
             }
             
             // Activer le GameHudCanvas
             if (_gameHudCanvas != null)
             {
                 UIManager.RegisterCanvas(_gameHudCanvas);
-                Logger.Instance.Info("GameHudCanvas ajouté à l'UIManager par la scène de gameplay", LogCategory.UI);
+                Logger.Info("GameHudCanvas ajouté à l'UIManager par la scène de gameplay", LogCategory.UI);
             }
             
             // Si le joueur existe, le marquer comme persistant pour qu'il ne soit pas détruit
@@ -90,27 +90,27 @@ namespace Potato.Core.Scenes
         /// </summary>
         public override void Deactivate()
         {
-            Logger.Instance.Info("Désactivation de la scène de gameplay", LogCategory.Gameplay);
+            Logger.Info("Désactivation de la scène de gameplay", LogCategory.Gameplay);
             
             // Désactiver le WaveManager
             if (_waveManager != null)
             {
                 //_waveManager.Deactivate();
-                Logger.Instance.Info("WaveManager désactivé par la scène de gameplay", LogCategory.Gameplay);
+                Logger.Info("WaveManager désactivé par la scène de gameplay", LogCategory.Gameplay);
             }
             
             // Désactiver le MapManager
             if (_mapManager != null)
             {
                 //_mapManager.Deactivate();
-                Logger.Instance.Info("MapManager désactivé par la scène de gameplay", LogCategory.Gameplay);
+                Logger.Info("MapManager désactivé par la scène de gameplay", LogCategory.Gameplay);
             }
             
             // Retirer le GameHudCanvas
             if (_gameHudCanvas != null)
             {
                // UIManager.RemoveCanvas(_gameHudCanvas.Name);
-                Logger.Instance.Info("GameHudCanvas retiré de l'UIManager par la scène de gameplay", LogCategory.UI);
+                Logger.Info("GameHudCanvas retiré de l'UIManager par la scène de gameplay", LogCategory.UI);
             }
             
             base.Deactivate();

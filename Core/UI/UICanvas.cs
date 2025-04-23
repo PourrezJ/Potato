@@ -14,7 +14,7 @@ namespace Potato.Core.UI
     [ExecutionOrder(ExecutionOrderAttribute.EarlyPriority)]
     public class UICanvas : GameBehaviour
     {
-        private List<UIElement> _rootElements = new List<UIElement>();
+        protected List<UIElement> _rootElements = new List<UIElement>();
         private bool _isVisible = true;
         private string _name;
 
@@ -48,7 +48,7 @@ namespace Potato.Core.UI
             }
             catch (Exception ex)
             {
-                Logger.Instance.Error($"Error during UICanvas Awake: {ex.Message}", LogCategory.UI);
+                Logger.Error($"Error during UICanvas Awake: {ex.Message}", LogCategory.UI);
             }
         }
 
@@ -106,11 +106,48 @@ namespace Potato.Core.UI
             if (!IsVisible)
                 return;
 
-            // Important: Commencer un nouveau batch pour les éléments de ce canvas
-            spriteBatch.Begin(samplerState: SamplerState.PointClamp);
-            
+            // Important: Commencer un nouveau batch pour les éléments de ce canvas avec les paramètres appropriés
             try
             {
+                if (spriteBatch == null || spriteBatch.GraphicsDevice == null)
+                {
+                    Logger.Error($"SpriteBatch invalide pour le canvas {Name}", LogCategory.UI);
+                    return;
+                }
+                
+                // Vérifier que UIManager.Pixel est bien initialisé
+                if (UIManager.Pixel == null)
+                {
+                    Logger.Warning($"UIManager.Pixel est null lors du rendu du canvas {Name}, tentative d'initialisation", LogCategory.UI);
+                    UIManager.Initialize();
+                    if (UIManager.Pixel == null)
+                    {
+                        Logger.Error($"Échec de l'initialisation d'UIManager.Pixel pour {Name}", LogCategory.UI);
+                        return;
+                    }
+                }
+
+                spriteBatch.Begin(
+                    SpriteSortMode.Deferred,
+                    BlendState.AlphaBlend,
+                    SamplerState.PointClamp,
+                    DepthStencilState.None,
+                    RasterizerState.CullNone
+                );
+                
+                // Dessiner explicitement un fond pour déboguer
+                if (Name == "PlayerSelection")
+                {
+                    // Dessiner un rectangle visible pour voir si le canvas est rendu
+                    Rectangle screenRect = new Rectangle(0, 0, 
+                        spriteBatch.GraphicsDevice.Viewport.Width, 
+                        spriteBatch.GraphicsDevice.Viewport.Height);
+                    spriteBatch.Draw(UIManager.Pixel, screenRect, new Color(50, 0, 50, 128));
+                    
+                    Logger.Debug("Rendu du fond du PlayerSelectionCanvas", LogCategory.UI);
+                }
+                
+                // Dessiner tous les éléments racines
                 foreach (var element in _rootElements)
                 {
                     if (element != null && element.IsVisible)
@@ -121,12 +158,17 @@ namespace Potato.Core.UI
             }
             catch (Exception ex)
             {
-                Logger.Instance.Error($"Erreur pendant le rendu du canvas {Name}: {ex.Message}", LogCategory.UI);
+                Logger.Error($"Erreur pendant le rendu du canvas {Name}: {ex.Message}", LogCategory.UI);
             }
             finally
             {
-                // S'assurer que End est toujours appelé, même en cas d'erreur
-                spriteBatch.End();
+                try {
+                    // S'assurer que End est toujours appelé, même en cas d'erreur
+                    spriteBatch.End();
+                }
+                catch (Exception ex) {
+                    Logger.Error($"Erreur lors de la fin du SpriteBatch dans {Name}: {ex.Message}", LogCategory.UI);
+                }
             }
         }
 

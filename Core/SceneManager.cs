@@ -49,7 +49,7 @@ namespace Potato.Core
             _nextScene = null;
             _isTransitioning = false;
             
-            Logger.Instance.Info("SceneManager initialized", LogCategory.Core);
+            Logger.Info("SceneManager initialized", LogCategory.Core);
         }
 
         /// <summary>
@@ -63,11 +63,11 @@ namespace Potato.Core
             if (!_scenes.ContainsKey(scene.Name))
             {
                 _scenes.Add(scene.Name, scene);
-                Logger.Instance.Debug($"Scene '{scene.Name}' registered", LogCategory.Core);
+                Logger.Debug($"Scene '{scene.Name}' registered", LogCategory.Core);
             }
             else
             {
-                Logger.Instance.Warning($"Scene '{scene.Name}' already registered", LogCategory.Core);
+                Logger.Warning($"Scene '{scene.Name}' already registered", LogCategory.Core);
             }
         }
         
@@ -84,7 +84,7 @@ namespace Potato.Core
                 }
                 
                 _scenes.Remove(sceneName);
-                Logger.Instance.Debug($"Scene '{sceneName}' unregistered", LogCategory.Core);
+                Logger.Debug($"Scene '{sceneName}' unregistered", LogCategory.Core);
             }
         }
         
@@ -95,7 +95,7 @@ namespace Potato.Core
         {
             if (!_scenes.ContainsKey(sceneName))
             {
-                Logger.Instance.Error($"Scene '{sceneName}' not found", LogCategory.Core);
+                Logger.Error($"Scene '{sceneName}' not found", LogCategory.Core);
                 return;
             }
             
@@ -115,7 +115,7 @@ namespace Potato.Core
             // Notifier les écouteurs
             OnSceneTransitionStarted?.Invoke(_activeScene, _nextScene);
             
-            Logger.Instance.Info($"Transitioning to scene '{sceneName}'", LogCategory.Core);
+            Logger.Info($"Transitioning to scene '{sceneName}'", LogCategory.Core);
             
             if (transitionDuration <= 0)
             {
@@ -245,7 +245,7 @@ namespace Potato.Core
             _nextScene = null;
             _loadingTask = null;
             
-            Logger.Instance.Warning("Scene transition cancelled", LogCategory.Core);
+            Logger.Warning("Scene transition cancelled", LogCategory.Core);
         }
         
         /// <summary>
@@ -295,7 +295,7 @@ namespace Potato.Core
             
             _activeScene = null;
             
-            Logger.Instance.Info("SceneManager reset", LogCategory.Core);
+            Logger.Info("SceneManager reset", LogCategory.Core);
         }
     }
 }

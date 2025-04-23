@@ -92,36 +92,32 @@ namespace Potato.Core.Logging
     /// <summary>
     /// Système de journalisation centralisé avec support pour plusieurs canaux de sortie
     /// </summary>
-    public class Logger
+    public static class Logger
     {
-        // Singleton
-        private static Logger _instance;
-        public static Logger Instance => _instance ?? (_instance = new Logger());
-        
         // Configuration
-        private LogLevel _minimumLevel = LogLevel.Error;
-        private bool _logToConsole = true;
-        private bool _logToFile = true;
-        private bool _logToUI = true;
-        private string _logFolder = "Logs";
-        private string _logFile;
+        private static LogLevel _minimumLevel = LogLevel.Error;
+        private static bool _logToConsole = true;
+        private static bool _logToFile = true;
+        private static bool _logToUI = true;
+        private static string _logFolder = "Logs";
+        private static string _logFile;
         
         /// <summary>
         /// Gets or sets whether file logging is enabled
         /// </summary>
-        public bool EnableFileLogging
+        public static bool EnableFileLogging
         {
             get { return _logToFile; }
             set { _logToFile = value; }
         }
         
         // État
-        private List<LogEntry> _recentLogs = new List<LogEntry>(1000); // Buffer circulaire
-        private int _maxRecentLogs = 1000;
-        private Dictionary<LogCategory, bool> _categoryFilters = new Dictionary<LogCategory, bool>();
-        private List<Action<LogEntry>> _logListeners = new List<Action<LogEntry>>();
+        private static List<LogEntry> _recentLogs = new List<LogEntry>(1000); // Buffer circulaire
+        private static int _maxRecentLogs = 1000;
+        private static Dictionary<LogCategory, bool> _categoryFilters = new Dictionary<LogCategory, bool>();
+        private static List<Action<LogEntry>> _logListeners = new List<Action<LogEntry>>();
         
-        private Logger()
+        static Logger()
         {
             // Initialiser les filtres de catégorie
             foreach (LogCategory category in Enum.GetValues(typeof(LogCategory)))
@@ -136,7 +132,7 @@ namespace Potato.Core.Logging
         /// <summary>
         /// Initialise le fichier journal avec un horodatage
         /// </summary>
-        private void InitializeLogFile()
+        private static void InitializeLogFile()
         {
             // Créer le dossier de journaux s'il n'existe pas
             if (!Directory.Exists(_logFolder))
@@ -167,7 +163,7 @@ namespace Potato.Core.Logging
         /// <summary>
         /// Configure les options de journalisation
         /// </summary>
-        public void Configure(LogLevel minLevel = LogLevel.Debug, bool logToConsole = true, bool logToFile = true, bool logToUI = true)
+        public static void Configure(LogLevel minLevel = LogLevel.Debug, bool logToConsole = true, bool logToFile = true, bool logToUI = true)
         {
             _minimumLevel = minLevel;
             _logToConsole = logToConsole;
@@ -178,7 +174,7 @@ namespace Potato.Core.Logging
         /// <summary>
         /// Définit le filtre pour une catégorie spécifique
         /// </summary>
-        public void SetCategoryFilter(LogCategory category, bool enabled)
+        public static void SetCategoryFilter(LogCategory category, bool enabled)
         {
             _categoryFilters[category] = enabled;
         }
@@ -186,7 +182,7 @@ namespace Potato.Core.Logging
         /// <summary>
         /// Ajoute un écouteur pour recevoir des notifications pour chaque entrée de journal
         /// </summary>
-        public void AddListener(Action<LogEntry> listener)
+        public static void AddListener(Action<LogEntry> listener)
         {
             if (listener != null && !_logListeners.Contains(listener))
             {
@@ -197,7 +193,7 @@ namespace Potato.Core.Logging
         /// <summary>
         /// Supprime un écouteur
         /// </summary>
-        public void RemoveListener(Action<LogEntry> listener)
+        public static void RemoveListener(Action<LogEntry> listener)
         {
             _logListeners.Remove(listener);
         }
@@ -205,7 +201,7 @@ namespace Potato.Core.Logging
         /// <summary>
         /// Consigne un message de journal
         /// </summary>
-        public void Log(LogLevel level, LogCategory category, string message, string source = "")
+        public static void Log(LogLevel level, LogCategory category, string message, string source = "")
         {
             // Vérifier le niveau et le filtre de catégorie
             if (level < _minimumLevel || !_categoryFilters[category])
@@ -276,7 +272,7 @@ namespace Potato.Core.Logging
         /// <summary>
         /// Consigne un message de niveau Debug
         /// </summary>
-        public void Debug(string message, LogCategory category = LogCategory.Core, string source = "")
+        public static void Debug(string message, LogCategory category = LogCategory.Core, string source = "")
         {
             Log(LogLevel.Debug, category, message, source);
         }
@@ -284,7 +280,7 @@ namespace Potato.Core.Logging
         /// <summary>
         /// Consigne un message de niveau Info
         /// </summary>
-        public void Info(string message, LogCategory category = LogCategory.Core, string source = "")
+        public static void Info(string message, LogCategory category = LogCategory.Core, string source = "")
         {
             Log(LogLevel.Info, category, message, source);
         }
@@ -292,7 +288,7 @@ namespace Potato.Core.Logging
         /// <summary>
         /// Consigne un message de niveau Warning
         /// </summary>
-        public void Warning(string message, LogCategory category = LogCategory.Core, string source = "")
+        public static void Warning(string message, LogCategory category = LogCategory.Core, string source = "")
         {
             Log(LogLevel.Warning, category, message, source);
         }
@@ -300,7 +296,7 @@ namespace Potato.Core.Logging
         /// <summary>
         /// Consigne un message de niveau Error
         /// </summary>
-        public void Error(string message, LogCategory category = LogCategory.Core, string source = "")
+        public static void Error(string message, LogCategory category = LogCategory.Core, string source = "")
         {
             Log(LogLevel.Error, category, message, source);
         }
@@ -308,7 +304,7 @@ namespace Potato.Core.Logging
         /// <summary>
         /// Consigne un message de niveau Critical
         /// </summary>
-        public void Critical(string message, LogCategory category = LogCategory.Core, string source = "")
+        public static void Critical(string message, LogCategory category = LogCategory.Core, string source = "")
         {
             Log(LogLevel.Critical, category, message, source);
         }
@@ -316,7 +312,7 @@ namespace Potato.Core.Logging
         /// <summary>
         /// Consigne une exception
         /// </summary>
-        public void Exception(Exception ex, LogCategory category = LogCategory.Core, string source = "")
+        public static void Exception(Exception ex, LogCategory category = LogCategory.Core, string source = "")
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine($"Exception: {ex.GetType().Name}");
@@ -335,7 +331,7 @@ namespace Potato.Core.Logging
         /// <summary>
         /// Obtient les entrées de journal récentes avec filtrage optionnel
         /// </summary>
-        public List<LogEntry> GetRecentLogs(LogLevel? minLevel = null, LogLevel? maxLevel = null, LogCategory? category = null, int maxCount = int.MaxValue)
+        public static List<LogEntry> GetRecentLogs(LogLevel? minLevel = null, LogLevel? maxLevel = null, LogCategory? category = null, int maxCount = int.MaxValue)
         {
             IEnumerable<LogEntry> filteredLogs = _recentLogs;
             
@@ -360,7 +356,7 @@ namespace Potato.Core.Logging
         /// <summary>
         /// Vide le buffer des journaux récents
         /// </summary>
-        public void ClearRecentLogs()
+        public static void ClearRecentLogs()
         {
             _recentLogs.Clear();
         }
@@ -368,7 +364,7 @@ namespace Potato.Core.Logging
         /// <summary>
         /// Convertit un LogLevel en couleur de console
         /// </summary>
-        private ConsoleColor GetConsoleColor(LogLevel level)
+        private static ConsoleColor GetConsoleColor(LogLevel level)
         {
             switch (level)
             {
@@ -390,7 +386,7 @@ namespace Potato.Core.Logging
         /// <summary>
         /// Shuts down the logger and performs any necessary cleanup
         /// </summary>
-        public void Shutdown()
+        public static void Shutdown()
         {
             // Log shutdown message
             if (_logToFile)

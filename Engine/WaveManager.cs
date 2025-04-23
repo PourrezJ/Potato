@@ -67,7 +67,7 @@ namespace Potato.Engine
         public override void OnEnable()
         {
             base.OnEnable();
-            Logger.Instance.Info("WaveManager activé", LogCategory.Gameplay);
+            Logger.Info("WaveManager activé", LogCategory.Gameplay);
         }
         
         /// <summary>
@@ -76,7 +76,7 @@ namespace Potato.Engine
         public override void OnDisable()
         {
             base.OnDisable();
-            Logger.Instance.Info("WaveManager désactivé", LogCategory.Gameplay);
+            Logger.Info("WaveManager désactivé", LogCategory.Gameplay);
         }
         
         /// <summary>
@@ -93,7 +93,7 @@ namespace Potato.Engine
             // Debug fixe pour identifier l'état des vagues à chaque update
             if (gameTime.TotalGameTime.TotalSeconds % 3 < 0.016f) // Afficher environ toutes les 3 secondes
             {
-                Logger.Instance.Debug($"[WaveManager] État: Vague={CurrentWave}, IsBetweenWaves={IsBetweenWaves}, Timer={WaveTimer:F2}, Ennemis={_game.Enemies.Count}", LogCategory.Gameplay);
+                Logger.Debug($"[WaveManager] État: Vague={CurrentWave}, IsBetweenWaves={IsBetweenWaves}, Timer={WaveTimer:F2}, Ennemis={_game.Enemies.Count}", LogCategory.Gameplay);
             }
 
             // Si on est entre deux vagues, ne rien mettre à jour
@@ -181,7 +181,7 @@ namespace Potato.Engine
             // Ne rien faire si on est déjà entre deux vagues
             if (IsBetweenWaves)
             {
-                Logger.Instance.Warning("[WaveManager] ForceEndWaveAndOpenShop appelée mais IsBetweenWaves est déjà true", LogCategory.Gameplay);
+                Logger.Warning("[WaveManager] ForceEndWaveAndOpenShop appelée mais IsBetweenWaves est déjà true", LogCategory.Gameplay);
                 return;
             }
                 
@@ -198,15 +198,15 @@ namespace Potato.Engine
                 }
                 else
                 {
-                    Logger.Instance.Warning("[WaveManager] OnWaveCompleted est null, personne n'est abonné à l'événement!", LogCategory.Gameplay);
+                    Logger.Warning("[WaveManager] OnWaveCompleted est null, personne n'est abonné à l'événement!", LogCategory.Gameplay);
                 }
                 
                 System.Diagnostics.Debug.WriteLine($"[FORCE-SHOP] ✅ Fin de vague pour la vague {CurrentWave}.");
             }
             catch (Exception ex)
             {
-                Logger.Instance.Error($"[WaveManager] Exception dans ForceEndWaveAndOpenShop: {ex.Message}", LogCategory.Gameplay);
-                Logger.Instance.Exception(ex);
+                Logger.Error($"[WaveManager] Exception dans ForceEndWaveAndOpenShop: {ex.Message}", LogCategory.Gameplay);
+                Logger.Exception(ex);
             }
         }
                 

@@ -29,12 +29,12 @@ namespace Potato.Core.Scenes
         
         private void InitializeShop()
         {
-            Logger.Instance.Debug("Initialisation de la boutique", LogCategory.UI);
+            Logger.Debug("Initialisation de la boutique", LogCategory.UI);
             
             // S'assurer que le WaveManager est dans l'état correct (entre deux vagues)
             if (_waveManager != null && !_waveManager.IsBetweenWaves)
             {
-                Logger.Instance.Warning("Le WaveManager n'est pas dans l'état 'entre deux vagues' alors que la boutique est ouverte", LogCategory.Gameplay);
+                Logger.Warning("Le WaveManager n'est pas dans l'état 'entre deux vagues' alors que la boutique est ouverte", LogCategory.Gameplay);
             }
             
             // Créer l'interface utilisateur de la boutique
@@ -52,7 +52,7 @@ namespace Potato.Core.Scenes
             if (_mapManager != null)
             {
                 //_mapManager.Activate();
-                Logger.Instance.Info("MapManager activé par la scène de boutique", LogCategory.Gameplay);
+                Logger.Info("MapManager activé par la scène de boutique", LogCategory.Gameplay);
             }
         }
         
@@ -62,7 +62,7 @@ namespace Potato.Core.Scenes
             if (_mapManager != null)
             {
                 //_mapManager.Deactivate();
-                Logger.Instance.Info("MapManager désactivé par la scène de boutique", LogCategory.Gameplay);
+                Logger.Info("MapManager désactivé par la scène de boutique", LogCategory.Gameplay);
             }
             
             base.Deactivate();

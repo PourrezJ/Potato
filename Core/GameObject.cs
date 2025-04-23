@@ -161,7 +161,7 @@ namespace Potato.Core
         {
             if (component is Transform)
             {
-                Logger.Instance.Warning("Impossible de supprimer le composant Transform d'un GameObject", LogCategory.Core);
+                Logger.Warning("Impossible de supprimer le composant Transform d'un GameObject", LogCategory.Core);
                 return;
             }
             
