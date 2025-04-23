@@ -11,6 +11,11 @@
         <Start>&#32;</Start>
         <End>&#126;</End>
       </CharacterRegion>
+      <!-- Caractères étendus pour le français et autres langues européennes -->
+      <CharacterRegion>
+        <Start>&#161;</Start>
+        <End>&#255;</End>
+      </CharacterRegion>
     </CharacterRegions>
   </Asset>
 </XnaContent>

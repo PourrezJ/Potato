@@ -31,14 +31,7 @@ namespace Potato.Core.Scenes
             Logger.Debug("Initialisation de la sélection des personnages", LogCategory.UI);
             
             try
-            {
-                // Vérifier si UIManager est correctement initialisé
-                if (UIManager.Pixel == null)
-                {
-                    Logger.Warning("UIManager.Pixel n'est pas initialisé, tentative d'initialisation", LogCategory.UI);
-                    UIManager.Initialize();
-                }
-                
+            {                
                 // Créer un GameObject pour l'interface de sélection des joueurs
                 _playerSelectionObject = new GameObject("PlayerSelectionUI");
                 

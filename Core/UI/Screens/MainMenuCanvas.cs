@@ -92,6 +92,8 @@ namespace Potato.Core.UI.Screens
             
             // Changer l'état du jeu directement, sans délai
             GameManager.Instance.SetGameState(GameManager.GameState.CharacterSelection);
+
+            SceneManager.LoadScene("CharacterSelection", 0, false);
         }
 
         private void OnOptionsButtonClicked()
